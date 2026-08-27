@@ -6,7 +6,7 @@
 
 **Architecture:** FastAPI creates one `ModelService` during application lifespan and reuses it for every request. `POST /predict` validates all 44 fields, makes a one-row pandas DataFrame for the serialized scikit-learn pipeline, writes a JSON-line event, and returns score, threshold, decision and model version.
 
-**Tech Stack:** Python 3.11, FastAPI, Pydantic v2, Uvicorn, pandas, scikit-learn, XGBoost, joblib, pytest, httpx, Docker, GitHub Actions.
+**Tech Stack:** Python 3.12, FastAPI, Pydantic v2, Uvicorn, pandas, scikit-learn, XGBoost, joblib, pytest, httpx, Docker, GitHub Actions.
 
 ---
 
@@ -209,7 +209,7 @@ def test_predict_returns_business_decision(valid_payload: dict[str, object]) -> 
 
 - [ ] **Step 2: Verify red** — run `bash tests/test_container_smoke.sh`; expected failure because `Dockerfile` is absent.
 
-- [ ] **Step 3: Implement** — Python 3.11 slim image, `/app` workdir, `PYTHONPATH=/app/src`, copied requirements then `pip install --no-cache-dir`, source and model copies, port 8000, and `uvicorn scoring_api.main:app --host 0.0.0.0 --port 8000`. Docker ignore excludes Git, data, docs, tests, logs, venv and notebooks. README documents local Uvicorn, `curl`, `/docs`, Docker build/run, and excluded sensitive files.
+- [ ] **Step 3: Implement** — Python 3.12 slim image, matching the MLflow-recorded model environment, `/app` workdir, `PYTHONPATH=/app/src`, copied requirements then `pip install --no-cache-dir`, source and model copies, port 8000, and `uvicorn scoring_api.main:app --host 0.0.0.0 --port 8000`. Docker ignore excludes Git, data, docs, tests, logs, venv and notebooks.
 
 - [ ] **Step 4: Verify green and commit** — run `bash tests/test_container_smoke.sh && PYTHONPATH=src pytest -v`; then `git add Dockerfile .dockerignore README.md tests/test_container_smoke.sh && git commit -m "build: containerize scoring API"`.
 
