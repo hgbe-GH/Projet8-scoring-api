@@ -1,0 +1,53 @@
+from collections.abc import Iterator
+
+import pytest
+
+
+@pytest.fixture
+def valid_payload() -> Iterator[dict[str, object]]:
+    yield {
+        "client_ape_division": 62.0,
+        "client_departement": "75",
+        "client_effectif": 25.0,
+        "client_idcc": 1486.0,
+        "client_nb_prior_dossiers": 3,
+        "client_opco_habituel": "opco-alpha",
+        "client_prior_nb_fails": 1,
+        "client_prior_nb_ok": 2,
+        "client_prior_nb_opcos_distincts": 1,
+        "client_prior_win_rate": 0.67,
+        "client_rang_dossier": 2,
+        "client_tranche_effectif": "11-49",
+        "annee_creation": 2018.0,
+        "ape_division": 62.0,
+        "departement_client": "75",
+        "duree_sous_seuil_min": "false",
+        "ecart_heures_vs_seuil_min": 7.0,
+        "effectif_client": 25.0,
+        "est_nouvel_opco_pour_client": "false",
+        "funder_max_factures": 4.0,
+        "funder_min_heures_facturable": 7.0,
+        "funder_nom": "funder-alpha",
+        "heures_prevues": 21.0,
+        "idcc": 1486.0,
+        "is_premier_dossier": "false",
+        "is_rush_q4": "false",
+        "is_session_ete": "false",
+        "jours_depuis_dernier_dossier": 90.0,
+        "modalite": "standard",
+        "mois_creation": 6.0,
+        "montant_ca_eur": 300000.0,
+        "montant_demande_eur": 2100.0,
+        "opco_habituel_client": "opco-alpha",
+        "pct_financement_demande": 0.8,
+        "source_lead": "direct",
+        "taux_horaire_demande_eur": 100.0,
+        "thematique": "data",
+        "tranche_effectif": "11-49",
+        "trimestre_creation": 2.0,
+        "type_financement": "standard",
+        "hg_departement_client": "75",
+        "hg_idcc": 1486.0,
+        "hg_opco_entreprise": "opco-alpha",
+        "hg_taille_entreprise": 25.0,
+    }
