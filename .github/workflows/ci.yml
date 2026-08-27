@@ -1,0 +1,47 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test the API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: PYTHONPATH=src pytest -v
+
+  build-and-smoke-test:
+    name: Build and smoke-test the Docker image
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tests/test_container_smoke.sh
+
+  deploy-hugging-face:
+    name: Deploy to Hugging Face Space
+    needs: build-and-smoke-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Explain skipped deployment
+        if: env.HF_TOKEN == '' || env.HF_SPACE_ID == ''
+        run: |
+          echo "Deployment skipped: configure HF_TOKEN and HF_SPACE_ID secrets."
+      - name: Install Hugging Face client
+        if: env.HF_TOKEN != '' && env.HF_SPACE_ID != ''
+        run: pip install huggingface_hub
+      - name: Upload Docker Space
+        if: env.HF_TOKEN != '' && env.HF_SPACE_ID != ''
+        run: huggingface-cli upload "$HF_SPACE_ID" . --repo-type space --token "$HF_TOKEN" --exclude ".git/*" --exclude ".venv/*" --exclude "logs/*"

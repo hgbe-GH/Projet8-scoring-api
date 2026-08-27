@@ -65,6 +65,8 @@ un Hugging Face Space Docker après ajout de ces secrets dans le dépôt GitHub 
 - `HF_TOKEN` : jeton d'accès Hugging Face avec droit d'écriture.
 - `HF_SPACE_ID` : identifiant du Space au format `utilisateur/nom-du-space`.
 
+Le job de déploiement indique explicitement qu'il est ignoré tant que ces deux
+secrets ne sont pas configurés ; les tests et la construction restent exécutés.
+
 Aucun secret ne doit être inscrit dans un fichier, une commande shell mémorisée
 ou un commit.
-
