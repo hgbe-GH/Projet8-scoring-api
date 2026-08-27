@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projet 8 — état des lieux clair</title>
+  <style>
+    :root {
+      --ink: #16202a;
+      --muted: #52606d;
+      --paper: #f7f8fa;
+      --card: #ffffff;
+      --line: #d7dee6;
+      --blue: #0b67b2;
+      --green: #0b7a53;
+      --amber: #a85a00;
+      --red: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--paper); color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    main { max-width: 1040px; margin: auto; padding: 48px 24px 72px; }
+    header { border-bottom: 4px solid var(--blue); padding-bottom: 24px; margin-bottom: 32px; }
+    h1 { font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.08; margin: 0 0 12px; letter-spacing: -0.04em; }
+    h2 { margin-top: 42px; font-size: 1.55rem; line-height: 1.2; }
+    h3 { margin: 24px 0 8px; font-size: 1.08rem; }
+    p, li { max-width: 82ch; }
+    a { color: var(--blue); }
+    .lead { color: var(--muted); font-size: 1.15rem; margin: 0; }
+    .note, .warning, .success {
+      padding: 16px 18px; border-left: 5px solid; border-radius: 6px; margin: 20px 0;
+    }
+    .note { background: #eaf4ff; border-color: var(--blue); }
+    .warning { background: #fff5e7; border-color: var(--amber); }
+    .success { background: #e9f8f0; border-color: var(--green); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); padding: 20px; border-radius: 10px; }
+    .card h3 { margin-top: 0; }
+    .status { font-weight: 700; font-size: .86rem; letter-spacing: .05em; text-transform: uppercase; }
+    .done { color: var(--green); }
+    .pending { color: var(--amber); }
+    .later { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; background: var(--card); margin: 16px 0 22px; }
+    th, td { padding: 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #edf3f8; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #edf1f5; padding: 2px 5px; border-radius: 4px; font-size: .92em; }
+    ol.steps li { margin: 10px 0; }
+    footer { margin-top: 56px; border-top: 1px solid var(--line); color: var(--muted); padding-top: 20px; font-size: .92rem; }
+    @media print { body { background: white; } main { max-width: none; padding: 24px; } .card { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Projet 8 : où en est-on ?</h1>
+      <p class="lead">Un point complet, en langage simple, sur la mission, ce qui fonctionne déjà, ce qui reste à faire et ce que vous devrez faire vous-même.</p>
+    </header>
+
+    <section class="success">
+      <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API fonctionne localement et dans Docker. La première exécution de la CI est réussie. Il reste le vrai déploiement sur Hugging Face, le monitoring/data drift, le notebook d’analyse, les preuves de stockage et l’étude d’optimisation.
+    </section>
+
+    <h2>1. Le contexte de la mission</h2>
+    <p>Le document OpenClassrooms raconte une mise en situation professionnelle : vous êtes Data Scientist. Une responsable, Chloé Dubois, vous demande de mettre un modèle de scoring en production pour qu’il puisse répondre presque en temps réel.</p>
+    <p>Dans l’histoire du sujet, l’entreprise s’appelle « Prêt à Dépenser » et le service s’appelle « Crédit Express ». Dans votre vrai travail précédent, le modèle porte le nom <strong>Matchers</strong> : il estime le risque qu’un dossier déjà gagné ne soit pas mené jusqu’à sa finalisation. C’est ce modèle réel qui est repris ici.</p>
+
+    <div class="grid">
+      <article class="card">
+        <h3>Le but métier</h3>
+        <p>Recevoir les informations d’un dossier, calculer un score de risque, puis aider une équipe à décider si le dossier mérite une attention particulière.</p>
+      </article>
+      <article class="card">
+        <h3>Le but technique</h3>
+        <p>Montrer que vous savez passer d’un modèle de data science à un système utilisable, testé, déployable et surveillé.</p>
+      </article>
+      <article class="card">
+        <h3>Le but de la soutenance</h3>
+        <p>Expliquer vos choix, montrer l’API et la CI/CD, puis discuter de fiabilité, dérive des données, performance et maintenance.</p>
+      </article>
+    </div>
+
+    <h2>2. Ce que le projet final devra démontrer</h2>
+    <table>
+      <thead><tr><th>Livrable attendu</th><th>Explication simple</th><th>État actuel</th></tr></thead>
+      <tbody>
+        <tr><td>Historique Git</td><td>Des commits compréhensibles qui racontent comment le projet a été construit.</td><td><span class="status done">Fait</span></td></tr>
+        <tr><td>API de prédiction</td><td>Une URL qui reçoit un dossier et renvoie un score.</td><td><span class="status done">Fait localement</span></td></tr>
+        <tr><td>Tests automatisés</td><td>Des vérifications qui évitent de casser l’API quand le code change.</td><td><span class="status done">Fait</span></td></tr>
+        <tr><td>Dockerfile</td><td>Une recette qui fabrique une image contenant l’API et le modèle.</td><td><span class="status done">Fait et testé</span></td></tr>
+        <tr><td>CI/CD</td><td>GitHub exécute automatiquement les tests et construit l’image à chaque push.</td><td><span class="status done">Fait et exécuté</span></td></tr>
+        <tr><td>Déploiement public</td><td>Une vraie adresse Internet où appeler l’API.</td><td><span class="status pending">À finaliser</span></td></tr>
+        <tr><td>Logs + monitoring</td><td>Garder les appels, scores, erreurs et temps de réponse pour voir si tout va bien.</td><td><span class="status pending">Base créée, analyse à faire</span></td></tr>
+        <tr><td>Data drift</td><td>Vérifier si les nouvelles données ressemblent encore aux données utilisées pour entraîner le modèle.</td><td><span class="status pending">À faire</span></td></tr>
+        <tr><td>Optimisation</td><td>Mesurer les temps de réponse, chercher un goulot d’étranglement, puis comparer avant/après.</td><td><span class="status pending">À faire</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. Ce qui a déjà été fait</h2>
+
+    <h3>Le dépôt et l’historique Git</h3>
+    <p>Un dépôt public a été créé sur GitHub : <a href="https://github.com/hgbe-GH/Projet8-scoring-api">github.com/hgbe-GH/Projet8-scoring-api</a>. Il est sur la branche <code>main</code>, et GitHub reçoit bien les commits.</p>
+    <p>L’historique est volontairement découpé en petites étapes : conception, contrat du modèle, validation des entrées, chargement du modèle, logs, API, Docker, CI/CD et documentation de compatibilité. C’est exactement ce qui permet de montrer une progression claire pendant la soutenance.</p>
+
+    <h3>Le modèle repris depuis Projet6</h3>
+    <ul>
+      <li>Le fichier du modèle est <code>models/matchers_option_a_model.joblib</code>.</li>
+      <li>Ses métadonnées sont dans <code>models/matchers_option_a_metadata.json</code>.</li>
+      <li>Il utilise 44 variables d’entrée.</li>
+      <li>Il renvoie une probabilité de risque entre 0 et 1.</li>
+      <li>Le seuil métier enregistré est <code>0.06</code>. Si le score est supérieur ou égal à ce seuil, l’API renvoie <code>risk_flag: true</code>.</li>
+      <li>Les données brutes du Projet6 ne sont pas copiées dans ce dépôt. C’est important pour éviter de publier des données sensibles.</li>
+    </ul>
+
+    <h3>L’API créée</h3>
+    <p>L’API repose sur FastAPI. Elle a deux routes :</p>
+    <ul>
+      <li><code>GET /health</code> : répond que le service est prêt et indique la version du modèle.</li>
+      <li><code>POST /predict</code> : reçoit les 44 informations d’un dossier et retourne le score, le seuil, le drapeau de risque, le nom et la version du modèle.</li>
+    </ul>
+    <p>La documentation interactive est automatiquement disponible sur <code>/docs</code> quand l’API tourne. Elle permet d’essayer l’API sans installer Postman.</p>
+
+    <div class="note">
+      <strong>Point technique important, traduit simplement :</strong> le modèle ne se recharge pas à chaque appel. Il est chargé une fois au démarrage de l’API, puis réutilisé. Cela évite de ralentir l’API et répond à un point de vigilance précis du sujet.
+    </div>
+
+    <h3>La validation et les erreurs</h3>
+    <p>Les 44 champs sont actuellement obligatoires. Si un champ manque, si du texte est envoyé à la place d’un nombre, ou si des heures prévues sont négatives, l’API répond avec une erreur claire <code>422</code>. Une erreur de chargement du modèle donne <code>503</code>. Une erreur interne de prédiction donne <code>500</code> sans divulguer le détail technique au client.</p>
+
+    <h3>Les logs déjà prévus</h3>
+    <p>Après une prédiction réussie, l’API écrit une ligne JSON dans <code>logs/predictions.jsonl</code>. Elle contient la date, les variables validées, le score, la décision, la durée de calcul et la version du modèle. En cas d’échec interne, elle écrit un événement d’erreur sans exposer les détails sensibles.</p>
+    <p>Le dossier <code>logs/</code> est volontairement ignoré par Git : les logs de production ne doivent pas être publiés avec le code.</p>
+
+    <h3>Les tests</h3>
+    <p>Il y a actuellement 14 tests automatisés réussis. Ils vérifient le modèle, les 44 champs, les erreurs de saisie, la prédiction, le chargement unique, les logs, les routes HTTP et la présence des étapes CI/CD.</p>
+    <p>La dernière vérification locale a donné : <strong>14 tests réussis, 0 échec</strong>.</p>
+
+    <h3>Docker</h3>
+    <p>Le fichier <code>Dockerfile</code> permet de construire une image complète. Elle utilise Python 3.12, car c’est la version enregistrée avec le modèle dans MLflow. Le modèle est ainsi relancé dans un environnement compatible.</p>
+    <p>Le test Docker a réellement construit l’image, démarré un conteneur, puis appelé <code>/health</code> avec succès. Le conteneur de test est nettoyé ensuite.</p>
+
+    <h3>La CI/CD GitHub Actions</h3>
+    <p>Le fichier <code>.github/workflows/ci.yml</code> se déclenche à chaque pull request et à chaque push sur <code>main</code>. Il effectue les étapes dans l’ordre :</p>
+    <ol>
+      <li>installer les dépendances et lancer les 14 tests ;</li>
+      <li>construire l’image Docker ;</li>
+      <li>démarrer l’image et tester <code>/health</code> ;</li>
+      <li>préparer l’envoi vers Hugging Face si les secrets nécessaires existent.</li>
+    </ol>
+    <p>La première exécution GitHub est terminée avec succès : <a href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/33077306535">ouvrir le run CI/CD réussi</a>.</p>
+
+    <h2>4. Ce qui reste à faire</h2>
+
+    <h3>Priorité 1 — rendre l’API réellement accessible sur Internet</h3>
+    <p>Le workflow est prêt, mais il n’y a pas encore de vrai Space Hugging Face ni de secret de déploiement. Pour l’instant, la CI affiche donc correctement « déploiement ignoré » après les tests et Docker.</p>
+    <div class="warning">
+      <strong>Important :</strong> la documentation Hugging Face demande une configuration Docker dans le bloc YAML en tête du README du Space, avec au minimum <code>sdk: docker</code> et <code>app_port: 8000</code>. Cette configuration n’est pas encore ajoutée au README actuel. Elle doit être ajoutée avant le premier déploiement réel. Hugging Face indique aussi que les Docker Spaces nécessitent une offre/ressource de calcul adaptée à votre compte. Voir la <a href="https://huggingface.co/docs/hub/en/spaces-sdks-docker">documentation Docker Spaces</a>.
+    </div>
+
+    <h3>Priorité 2 — créer le monitoring et l’analyse de dérive</h3>
+    <p>Les logs existent, mais ils ne sont pas encore analysés. Il faudra créer un notebook qui lit les logs, produit des graphiques et répond à ces questions :</p>
+    <ul>
+      <li>les scores deviennent-ils soudainement très différents ?</li>
+      <li>les valeurs envoyées à l’API ressemblent-elles encore aux valeurs utilisées pour entraîner le modèle ?</li>
+      <li>la latence augmente-t-elle ?</li>
+      <li>y a-t-il trop d’erreurs <code>422</code>, <code>500</code> ou <code>503</code> ?</li>
+    </ul>
+    <p>Pour faire du vrai data drift, il faut aussi une référence stable provenant du Projet6. Nous utiliserons des statistiques ou échantillons non sensibles, pas les données brutes publiées.</p>
+
+    <h3>Priorité 3 — choisir un stockage de production crédible</h3>
+    <p>Le fichier JSON local suffit pour un prototype. En revanche, sur Hugging Face, les fichiers écrits dans le conteneur peuvent disparaître lors d’un redémarrage. Il faudra donc choisir une solution de stockage plus durable : base de données, stockage objet, Dataset Hub, ou export régulier des logs. Il faudra ensuite prendre les captures d’écran demandées par le sujet.</p>
+
+    <h3>Priorité 4 — étudier la performance</h3>
+    <p>Une fois l’API déployée et utilisée, il faudra mesurer le temps de réponse et le temps d’inférence. Ensuite, on choisira une optimisation utile, par exemple simplifier le code, modifier l’environnement, ou tester un format de modèle plus rapide. L’important est de montrer une comparaison avant/après sans dégrader la qualité du modèle.</p>
+
+    <h3>Priorité 5 — préparer la soutenance</h3>
+    <p>Vous devrez pouvoir montrer le dépôt, les commits, le fichier Docker, le workflow, un appel API réussi, les résultats du monitoring et l’amélioration de performance. Il faudra aussi expliquer les choix : pourquoi FastAPI, pourquoi Docker, pourquoi ce stockage de logs et comment vous détectez la dérive.</p>
+
+    <h2>5. Vos prochaines actions concrètes</h2>
+    <ol class="steps">
+      <li><strong>Créer un compte Hugging Face</strong> si vous n’en avez pas.</li>
+      <li><strong>Créer un Space</strong> de type Docker et choisir un nom, par exemple <code>hgbe-GH/projet8-scoring-api</code>.</li>
+      <li><strong>Créer un jeton Hugging Face</strong> avec l’autorisation d’écriture, puis ne jamais le partager dans le chat ou le code.</li>
+      <li><strong>Ajouter deux secrets sur GitHub</strong> dans le dépôt : <code>HF_TOKEN</code> et <code>HF_SPACE_ID</code>. GitHub indique que les secrets doivent être stockés dans les réglages du dépôt et utilisés comme variables d’environnement, jamais écrits en clair dans le workflow.</li>
+      <li><strong>Ajouter la configuration Docker du Space</strong> dans le README avant le premier déploiement.</li>
+      <li><strong>Faire un push</strong> : GitHub relancera automatiquement le workflow et enverra le projet vers Hugging Face.</li>
+      <li><strong>Me donner l’autorisation de poursuivre</strong> avec le notebook de monitoring et l’analyse de data drift : ce sera la prochaine grande étape du projet.</li>
+    </ol>
+
+    <h2>6. Les fichiers importants, sans jargon</h2>
+    <table>
+      <thead><tr><th>Fichier ou dossier</th><th>À quoi il sert</th></tr></thead>
+      <tbody>
+        <tr><td><code>README.md</code></td><td>Le mode d’emploi du projet : lancer localement, tester, utiliser Docker et configurer le déploiement.</td></tr>
+        <tr><td><code>models/</code></td><td>Le modèle entraîné et son dictionnaire de métadonnées.</td></tr>
+        <tr><td><code>src/scoring_api/main.py</code></td><td>Les routes de l’API.</td></tr>
+        <tr><td><code>src/scoring_api/schemas.py</code></td><td>Les 44 champs obligatoires et les règles de validation.</td></tr>
+        <tr><td><code>src/scoring_api/model_service.py</code></td><td>Le chargement unique et la prédiction avec le modèle.</td></tr>
+        <tr><td><code>src/scoring_api/logging_service.py</code></td><td>L’écriture des événements de production.</td></tr>
+        <tr><td><code>tests/</code></td><td>Les contrôles automatiques.</td></tr>
+        <tr><td><code>Dockerfile</code></td><td>La recette de l’image Docker.</td></tr>
+        <tr><td><code>.github/workflows/ci.yml</code></td><td>Les étapes automatiques GitHub Actions.</td></tr>
+        <tr><td><code>docs/</code></td><td>La conception et le plan de mise en œuvre.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>7. Ce que vous pouvez dire simplement à l’oral</h2>
+    <div class="note">
+      « J’ai repris le modèle construit dans le Projet6 et je l’ai exposé avec une API FastAPI. L’API valide les données avant de prédire, charge le modèle une seule fois au démarrage et renvoie un score de risque ainsi qu’une décision basée sur le seuil métier. Le projet est conteneurisé avec Docker et testé automatiquement par GitHub Actions à chaque push. Les appels sont journalisés pour préparer le monitoring et l’analyse de dérive. La prochaine étape est de déployer l’API sur Hugging Face puis d’analyser les logs produits. »
+    </div>
+
+    <footer>
+      Rapport généré le 27 août 2026. État vérifié : dépôt public disponible, branche main poussée, CI/CD réussie, 14 tests locaux réussis. Le déploiement Hugging Face, le monitoring et le data drift ne sont pas encore terminés.
+    </footer>
+  </main>
+</body>
+</html>
