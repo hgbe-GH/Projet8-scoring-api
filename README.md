@@ -60,13 +60,16 @@ pour préparer l'analyse ultérieure de dérive.
 
 GitHub Actions exécute les tests, construit l'image Docker et lance le test de
 fumée à chaque pull request et à chaque push sur `main`. Le déploiement cible
-un Hugging Face Space Docker après ajout de ces secrets dans le dépôt GitHub :
+un service web Docker Render :
 
-- `HF_TOKEN` : jeton d'accès Hugging Face avec droit d'écriture.
-- `HF_SPACE_ID` : identifiant du Space au format `utilisateur/nom-du-space`.
+- API publique : `https://projet8-scoring-api.onrender.com`
+- Contrôle de santé : `https://projet8-scoring-api.onrender.com/health`
 
-Le job de déploiement indique explicitement qu'il est ignoré tant que ces deux
-secrets ne sont pas configurés ; les tests et la construction restent exécutés.
+Render construit le `Dockerfile` du dépôt et vérifie `/health` avant de rendre
+une nouvelle version accessible. Le service suit la branche `main` pour les
+redéploiements.
 
-Aucun secret ne doit être inscrit dans un fichier, une commande shell mémorisée
-ou un commit.
+L'offre gratuite Render met le service en veille après une période d'inactivité
+et son disque est éphémère. Les événements `logs/predictions.jsonl` ne doivent
+donc pas être considérés comme un stockage durable : l'étape de monitoring les
+enverra vers un stockage persistant.
