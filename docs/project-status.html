@@ -60,7 +60,7 @@
     </header>
 
     <section class="success">
-      <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API fonctionne localement et dans Docker. La première exécution de la CI est réussie. Il reste le vrai déploiement sur Hugging Face, le monitoring/data drift, le notebook d’analyse, les preuves de stockage et l’étude d’optimisation.
+      <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API est déployée sur Render. Après les contrôles CI réussis, Render déploie automatiquement la branche <code>main</code>. Il reste le monitoring/data drift, le notebook d’analyse, le stockage persistant des événements et l’étude d’optimisation.
     </section>
 
     <h2>1. Le contexte de la mission</h2>
@@ -87,11 +87,11 @@
       <thead><tr><th>Livrable attendu</th><th>Explication simple</th><th>État actuel</th></tr></thead>
       <tbody>
         <tr><td>Historique Git</td><td>Des commits compréhensibles qui racontent comment le projet a été construit.</td><td><span class="status done">Fait</span></td></tr>
-        <tr><td>API de prédiction</td><td>Une URL qui reçoit un dossier et renvoie un score.</td><td><span class="status done">Fait localement</span></td></tr>
+        <tr><td>API de prédiction</td><td>Une URL qui reçoit un dossier et renvoie un score.</td><td><span class="status done">Fait et déployé</span></td></tr>
         <tr><td>Tests automatisés</td><td>Des vérifications qui évitent de casser l’API quand le code change.</td><td><span class="status done">Fait</span></td></tr>
         <tr><td>Dockerfile</td><td>Une recette qui fabrique une image contenant l’API et le modèle.</td><td><span class="status done">Fait et testé</span></td></tr>
-        <tr><td>CI/CD</td><td>GitHub exécute automatiquement les tests et construit l’image à chaque push.</td><td><span class="status done">Fait et exécuté</span></td></tr>
-        <tr><td>Déploiement public</td><td>Une vraie adresse Internet où appeler l’API.</td><td><span class="status pending">À finaliser</span></td></tr>
+        <tr><td>CI/CD</td><td>GitHub exécute automatiquement les tests et construit l’image à chaque push ; Render déploie après leur succès.</td><td><span class="status done">Fait et exécuté</span></td></tr>
+        <tr><td>Déploiement public</td><td>Une vraie adresse Internet où appeler l’API.</td><td><span class="status done">Fait sur Render</span></td></tr>
         <tr><td>Logs + monitoring</td><td>Garder les appels, scores, erreurs et temps de réponse pour voir si tout va bien.</td><td><span class="status pending">Base créée, analyse à faire</span></td></tr>
         <tr><td>Data drift</td><td>Vérifier si les nouvelles données ressemblent encore aux données utilisées pour entraîner le modèle.</td><td><span class="status pending">À faire</span></td></tr>
         <tr><td>Optimisation</td><td>Mesurer les temps de réponse, chercher un goulot d’étranglement, puis comparer avant/après.</td><td><span class="status pending">À faire</span></td></tr>
@@ -147,17 +147,14 @@
       <li>installer les dépendances et lancer les 14 tests ;</li>
       <li>construire l’image Docker ;</li>
       <li>démarrer l’image et tester <code>/health</code> ;</li>
-      <li>préparer l’envoi vers Hugging Face si les secrets nécessaires existent.</li>
+      <li>autoriser le déploiement automatique sur Render après le succès des contrôles.</li>
     </ol>
     <p>La première exécution GitHub est terminée avec succès : <a href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/33077306535">ouvrir le run CI/CD réussi</a>.</p>
 
     <h2>4. Ce qui reste à faire</h2>
 
-    <h3>Priorité 1 — rendre l’API réellement accessible sur Internet</h3>
-    <p>Le workflow est prêt, mais il n’y a pas encore de vrai Space Hugging Face ni de secret de déploiement. Pour l’instant, la CI affiche donc correctement « déploiement ignoré » après les tests et Docker.</p>
-    <div class="warning">
-      <strong>Important :</strong> la documentation Hugging Face demande une configuration Docker dans le bloc YAML en tête du README du Space, avec au minimum <code>sdk: docker</code> et <code>app_port: 8000</code>. Cette configuration n’est pas encore ajoutée au README actuel. Elle doit être ajoutée avant le premier déploiement réel. Hugging Face indique aussi que les Docker Spaces nécessitent une offre/ressource de calcul adaptée à votre compte. Voir la <a href="https://huggingface.co/docs/hub/en/spaces-sdks-docker">documentation Docker Spaces</a>.
-    </div>
+    <h3>Priorité 1 — conserver la preuve du déploiement</h3>
+    <p>L’API est disponible sur <a href="https://projet8-scoring-api.onrender.com/health">projet8-scoring-api.onrender.com/health</a>. Render reconstruit l’image Docker et vérifie <code>/health</code> après un push dont la CI GitHub est réussie. Une capture des pages GitHub Actions et Render permettra de le démontrer à la soutenance.</p>
 
     <h3>Priorité 2 — créer le monitoring et l’analyse de dérive</h3>
     <p>Les logs existent, mais ils ne sont pas encore analysés. Il faudra créer un notebook qui lit les logs, produit des graphiques et répond à ces questions :</p>
@@ -170,7 +167,7 @@
     <p>Pour faire du vrai data drift, il faut aussi une référence stable provenant du Projet6. Nous utiliserons des statistiques ou échantillons non sensibles, pas les données brutes publiées.</p>
 
     <h3>Priorité 3 — choisir un stockage de production crédible</h3>
-    <p>Le fichier JSON local suffit pour un prototype. En revanche, sur Hugging Face, les fichiers écrits dans le conteneur peuvent disparaître lors d’un redémarrage. Il faudra donc choisir une solution de stockage plus durable : base de données, stockage objet, Dataset Hub, ou export régulier des logs. Il faudra ensuite prendre les captures d’écran demandées par le sujet.</p>
+    <p>Le fichier JSON local suffit pour un prototype. En revanche, sur Render gratuit, les fichiers écrits dans le conteneur peuvent disparaître lors d’un redémarrage. Il faudra donc choisir une solution de stockage plus durable : base de données, stockage objet ou export régulier des logs. Il faudra ensuite prendre les captures d’écran demandées par le sujet.</p>
 
     <h3>Priorité 4 — étudier la performance</h3>
     <p>Une fois l’API déployée et utilisée, il faudra mesurer le temps de réponse et le temps d’inférence. Ensuite, on choisira une optimisation utile, par exemple simplifier le code, modifier l’environnement, ou tester un format de modèle plus rapide. L’important est de montrer une comparaison avant/après sans dégrader la qualité du modèle.</p>
@@ -180,13 +177,10 @@
 
     <h2>5. Vos prochaines actions concrètes</h2>
     <ol class="steps">
-      <li><strong>Créer un compte Hugging Face</strong> si vous n’en avez pas.</li>
-      <li><strong>Créer un Space</strong> de type Docker et choisir un nom, par exemple <code>hgbe-GH/projet8-scoring-api</code>.</li>
-      <li><strong>Créer un jeton Hugging Face</strong> avec l’autorisation d’écriture, puis ne jamais le partager dans le chat ou le code.</li>
-      <li><strong>Ajouter deux secrets sur GitHub</strong> dans le dépôt : <code>HF_TOKEN</code> et <code>HF_SPACE_ID</code>. GitHub indique que les secrets doivent être stockés dans les réglages du dépôt et utilisés comme variables d’environnement, jamais écrits en clair dans le workflow.</li>
-      <li><strong>Ajouter la configuration Docker du Space</strong> dans le README avant le premier déploiement.</li>
-      <li><strong>Faire un push</strong> : GitHub relancera automatiquement le workflow et enverra le projet vers Hugging Face.</li>
-      <li><strong>Me donner l’autorisation de poursuivre</strong> avec le notebook de monitoring et l’analyse de data drift : ce sera la prochaine grande étape du projet.</li>
+      <li><strong>Conserver les liens et captures</strong> du workflow GitHub Actions et du déploiement Render.</li>
+      <li><strong>Choisir un stockage persistant</strong> pour les événements de prédiction.</li>
+      <li><strong>Mettre en place le monitoring</strong> : latence, erreurs et dérive des données.</li>
+      <li><strong>Créer le notebook d’analyse</strong> et la présentation des résultats de drift.</li>
     </ol>
 
     <h2>6. Les fichiers importants, sans jargon</h2>
@@ -208,11 +202,11 @@
 
     <h2>7. Ce que vous pouvez dire simplement à l’oral</h2>
     <div class="note">
-      « J’ai repris le modèle construit dans le Projet6 et je l’ai exposé avec une API FastAPI. L’API valide les données avant de prédire, charge le modèle une seule fois au démarrage et renvoie un score de risque ainsi qu’une décision basée sur le seuil métier. Le projet est conteneurisé avec Docker et testé automatiquement par GitHub Actions à chaque push. Les appels sont journalisés pour préparer le monitoring et l’analyse de dérive. La prochaine étape est de déployer l’API sur Hugging Face puis d’analyser les logs produits. »
+      « J’ai repris le modèle construit dans le Projet6 et je l’ai exposé avec une API FastAPI. L’API valide les données avant de prédire, charge le modèle une seule fois au démarrage et renvoie un score de risque ainsi qu’une décision basée sur le seuil métier. Le projet est conteneurisé avec Docker et testé automatiquement par GitHub Actions à chaque push. Après les contrôles réussis, Render déploie automatiquement l’API. Les appels sont journalisés pour préparer le monitoring et l’analyse de dérive. La prochaine étape est d’envoyer ces événements vers un stockage persistant, puis de les analyser. »
     </div>
 
     <footer>
-      Rapport généré le 27 août 2026. État vérifié : dépôt public disponible, branche main poussée, CI/CD réussie, 14 tests locaux réussis. Le déploiement Hugging Face, le monitoring et le data drift ne sont pas encore terminés.
+      Rapport mis à jour le 4 septembre 2026. État vérifié : dépôt public disponible, branche main poussée, CI/CD réussie, API déployée sur Render et 14 tests locaux réussis. Le monitoring et le data drift ne sont pas encore terminés.
     </footer>
   </main>
 </body>
