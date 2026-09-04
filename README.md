@@ -66,8 +66,9 @@ un service web Docker Render :
 - Contrôle de santé : `https://projet8-scoring-api.onrender.com/health`
 
 Render construit le `Dockerfile` du dépôt et vérifie `/health` avant de rendre
-une nouvelle version accessible. Le service suit la branche `main` pour les
-redéploiements.
+une nouvelle version accessible. Le service est configuré sur la branche
+`main`. Pour déclencher les redéploiements automatiquement après la CI, le
+compte Render doit aussi autoriser l'accès au dépôt GitHub.
 
 L'offre gratuite Render met le service en veille après une période d'inactivité
 et son disque est éphémère. Les événements `logs/predictions.jsonl` ne doivent
