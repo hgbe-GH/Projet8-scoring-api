@@ -51,10 +51,53 @@ bash tests/test_container_smoke.sh
 ## Données et monitoring
 
 Le dépôt versionne le modèle et ses métadonnées, mais jamais les données brutes
-du Projet6, les logs de prédiction ou des secrets. Les événements locaux sont
-écrits sous `logs/predictions.jsonl`, qui est ignoré par Git. Ils contiennent
-les entrées validées, le score, la décision, la latence et la version du modèle
-pour préparer l'analyse ultérieure de dérive.
+du Projet6, les logs de prédiction ou des secrets. Chaque appel à `/predict`
+produit un événement JSON structuré contenant un identifiant, le timestamp, le
+statut HTTP, la latence, la version du modèle et, en cas de succès, les entrées
+validées, le score et la décision. Les erreurs ne contiennent ni entrée brute
+ni détail technique. L'événement est écrit dans `logs/predictions.jsonl` et
+préfixé par `ML_EVENT ` dans les logs standards de Render.
+
+### Flux local gratuit
+
+`API Render → logs structurés → export local → SQLite → analyse`
+
+Le disque de Render gratuit est éphémère : le stockage durable du PoC est donc
+local. On exporte les logs Render, puis on les importe de façon idempotente dans
+la base SQLite `data/monitoring/monitoring.db`. Les bases, exports et rapports
+sont volontairement ignorés par Git.
+
+```bash
+render logs -r srv-daddn7oae00c739qdfq0 -o json > data/monitoring/render-export.json
+PYTHONPATH=src python scripts/import_render_logs.py --input data/monitoring/render-export.json
+PYTHONPATH=src python scripts/analyze_monitoring.py --reference data/monitoring/reference_events.jsonl
+```
+
+Le rapport écrit `reports/monitoring/latest_report.json` et
+`reports/monitoring/latest_report.md`. Il mesure le taux d'erreur et la latence
+p95 sur tous les événements, puis le drift uniquement sur les prédictions
+réussies. Les alertes initiales sont : taux d'erreur > 5 %, latence p95 >
+1000 ms, PSI ≥ 0,20 pour une variable numérique et taux de catégorie inconnue
+≥ 5 % pour une variable catégorielle.
+
+Pour une démonstration entièrement reproductible, sans donnée métier ni
+personnelle :
+
+```bash
+PYTHONPATH=src python scripts/generate_monitoring_demo.py
+PYTHONPATH=src python scripts/import_render_logs.py --input data/monitoring/render_demo_export.jsonl
+PYTHONPATH=src python scripts/analyze_monitoring.py --reference data/monitoring/reference_events.jsonl
+```
+
+La référence `synthetic_demo` provoque volontairement une alerte PSI sur
+`heures_prevues` et une alerte de catégorie nouvelle sur `modalite`. Elle
+prouve le pipeline de monitoring, pas une dérive réelle. Une conclusion de
+production exige une référence stable et gouvernée issue du Projet6.
+
+Les entrées peuvent contenir des données personnelles. En contexte réel, il
+faut appliquer le RGPD : minimisation des champs, durée de rétention définie,
+contrôle des accès, chiffrement du stockage et procédure de suppression. Le
+PoC ne publie ni logs ni base de données.
 
 ## CI/CD et déploiement
 
