@@ -12,5 +12,7 @@ logs/
 data/raw/
 data/interim/
 data/processed/
+data/monitoring/
+reports/monitoring/
 mlruns/
 .DS_Store
