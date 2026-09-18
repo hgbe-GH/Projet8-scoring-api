@@ -6,6 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from scoring_api.monitoring_config import DATABASE_PATH
 from scoring_api.monitoring_storage import import_render_export
 
 
@@ -16,7 +17,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--database",
         type=Path,
-        default=Path("data/monitoring/monitoring.db"),
+        default=DATABASE_PATH,
     )
     return parser.parse_args()
 

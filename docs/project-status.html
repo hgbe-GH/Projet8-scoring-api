@@ -60,7 +60,7 @@
     </header>
 
     <section class="success">
-      <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API est déployée sur Render. Après les contrôles CI réussis, Render déploie automatiquement la branche <code>main</code>. Les logs structurés, l’export local, le stockage SQLite et une première mesure de dérive sont disponibles. Il reste l’étude d’optimisation et une référence de production gouvernée.
+      <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API est déployée sur Render. Après les contrôles CI réussis, Render déploie automatiquement la branche <code>main</code>. Les logs structurés, le stockage SQLite, le rapport Evidently et le dashboard Streamlit sont disponibles localement. Il reste l’étude de performance et une référence Projet6 gouvernée pour conclure sur une dérive réelle.
     </section>
 
     <h2>1. Le contexte de la mission</h2>
@@ -93,7 +93,7 @@
         <tr><td>CI/CD</td><td>GitHub exécute automatiquement les tests et construit l’image à chaque push ; Render déploie après leur succès.</td><td><span class="status done">Fait et exécuté</span></td></tr>
         <tr><td>Déploiement public</td><td>Une vraie adresse Internet où appeler l’API.</td><td><span class="status done">Fait sur Render</span></td></tr>
         <tr><td>Logs + monitoring</td><td>Garder les appels, scores, erreurs et temps de réponse pour voir si tout va bien.</td><td><span class="status done">Fait en PoC local</span></td></tr>
-        <tr><td>Data drift</td><td>Vérifier si les nouvelles données ressemblent encore aux données utilisées pour entraîner le modèle.</td><td><span class="status done">Mesure initiale, référence synthétique</span></td></tr>
+        <tr><td>Data drift</td><td>Comparer les variables d’entrée d’une référence avec les prédictions collectées.</td><td><span class="status done">Evidently + Streamlit, référence synthétique</span></td></tr>
         <tr><td>Optimisation</td><td>Mesurer les temps de réponse, chercher un goulot d’étranglement, puis comparer avant/après.</td><td><span class="status pending">À faire</span></td></tr>
       </tbody>
     </table>
@@ -156,15 +156,15 @@
     <h3>Priorité 1 — conserver la preuve du déploiement</h3>
     <p>L’API est disponible sur <a href="https://projet8-scoring-api.onrender.com/health">projet8-scoring-api.onrender.com/health</a>. Render reconstruit l’image Docker et vérifie <code>/health</code> après un push dont la CI GitHub est réussie. Une capture des pages GitHub Actions et Render permettra de le démontrer à la soutenance.</p>
 
-    <h3>Priorité 2 — renforcer l’analyse de dérive</h3>
-    <p>Le PoC de monitoring est en place. Il lit les événements stockés localement et répond déjà à ces questions :</p>
+    <h3>Priorité 2 — remplacer la référence synthétique</h3>
+    <p>Le monitoring local est en place. Il lit les événements SQLite et permet de suivre :</p>
     <ul>
-      <li>les scores deviennent-ils soudainement très différents ?</li>
-      <li>les valeurs envoyées à l’API ressemblent-elles encore aux valeurs utilisées pour entraîner le modèle ?</li>
-      <li>la latence augmente-t-elle ?</li>
-      <li>y a-t-il trop d’erreurs <code>422</code>, <code>500</code> ou <code>503</code> ?</li>
+      <li>la distribution de six variables d’entrée avec Evidently ;</li>
+      <li>les alertes locales PSI et catégories inconnues ;</li>
+      <li>la latence et le taux d’erreur des appels ;</li>
+      <li>le nombre et la période des événements conservés dans SQLite.</li>
     </ul>
-    <p>La démonstration utilise une référence synthétique et prouve le mécanisme, pas une dérive réelle. Pour une conclusion de production, il faudra une référence stable provenant du Projet6, gouvernée et non publiée.</p>
+    <p>Le dashboard Streamlit affiche ces résultats et avertit si SQLite a changé depuis le dernier rapport. La démonstration utilise une référence synthétique et prouve le mécanisme, pas une dérive réelle. Pour une conclusion de production, il faudra une référence stable provenant du Projet6, gouvernée et non publiée.</p>
 
     <h3>Priorité 3 — faire évoluer le stockage si le service grandit</h3>
     <p>Le PoC conserve durablement les exports dans SQLite localement. En production réelle, il faudra remplacer ou compléter cette solution par un stockage centralisé, chiffré et soumis à des règles de rétention.</p>
@@ -193,6 +193,8 @@
         <tr><td><code>src/scoring_api/schemas.py</code></td><td>Les 44 champs obligatoires et les règles de validation.</td></tr>
         <tr><td><code>src/scoring_api/model_service.py</code></td><td>Le chargement unique et la prédiction avec le modèle.</td></tr>
         <tr><td><code>src/scoring_api/logging_service.py</code></td><td>L’écriture des événements de production.</td></tr>
+        <tr><td><code>src/scoring_api/evidently_monitoring.py</code></td><td>La comparaison Evidently entre référence et production.</td></tr>
+        <tr><td><code>scripts/monitoring_dashboard.py</code></td><td>Le tableau de bord Streamlit local.</td></tr>
         <tr><td><code>tests/</code></td><td>Les contrôles automatiques.</td></tr>
         <tr><td><code>Dockerfile</code></td><td>La recette de l’image Docker.</td></tr>
         <tr><td><code>.github/workflows/ci.yml</code></td><td>Les étapes automatiques GitHub Actions.</td></tr>
@@ -202,11 +204,11 @@
 
     <h2>7. Ce que vous pouvez dire simplement à l’oral</h2>
     <div class="note">
-      « J’ai repris le modèle construit dans le Projet6 et je l’ai exposé avec une API FastAPI. L’API valide les données avant de prédire, charge le modèle une seule fois au démarrage et renvoie un score de risque ainsi qu’une décision basée sur le seuil métier. Le projet est conteneurisé avec Docker et testé automatiquement par GitHub Actions à chaque push. Après les contrôles réussis, Render déploie automatiquement l’API. Les appels sont journalisés, exportés localement puis stockés dans SQLite. Un rapport surveille erreurs, latence et dérive ; la référence synthétique démontre le pipeline, mais devra être remplacée par une référence Projet6 gouvernée. »
+      « J’ai repris le modèle construit dans le Projet6 et je l’ai exposé avec une API FastAPI. L’API valide les données avant de prédire, charge le modèle une seule fois au démarrage et renvoie un score de risque ainsi qu’une décision basée sur le seuil métier. Le projet est conteneurisé avec Docker et testé automatiquement par GitHub Actions à chaque push. Après les contrôles réussis, Render déploie automatiquement l’API. Les appels sont journalisés, exportés localement puis stockés dans SQLite. Evidently compare les variables d’entrée à une référence et Streamlit affiche les résultats, la latence, les erreurs et la preuve de stockage. La référence synthétique démontre le pipeline ; une référence Projet6 gouvernée reste nécessaire pour conclure sur la production. »
     </div>
 
     <footer>
-      Rapport mis à jour le 10 septembre 2026. État à vérifier à la prochaine exécution : dépôt public, API Render, CI/CD, monitoring local, stockage SQLite et première mesure de drift synthétique. L’optimisation reste à réaliser.
+      Rapport mis à jour le 17 septembre 2026. Le pipeline local a été vérifié par tests, par un lancement Streamlit et par le test de fumée Docker. La mesure de drift reste démonstrative tant que la référence Projet6 et un échantillon de production représentatif ne sont pas disponibles. L’étude de performance reste à réaliser.
     </footer>
   </main>
 </body>

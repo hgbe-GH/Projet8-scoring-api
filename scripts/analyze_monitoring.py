@@ -8,26 +8,39 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scoring_api.evidently_monitoring import build_evidently_report
 from scoring_api.monitoring_analysis import build_monitoring_report
-from scoring_api.monitoring_storage import list_prediction_events
+from scoring_api.monitoring_config import DATABASE_PATH, REFERENCE_PATH, REPORT_DIR
+from scoring_api.monitoring_storage import list_prediction_events, storage_evidence
 
 
 def parse_arguments() -> argparse.Namespace:
     """Return parameters for the local monitoring analysis."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--database", type=Path, default=Path("data/monitoring/monitoring.db")
+        "--database", type=Path, default=DATABASE_PATH
     )
-    parser.add_argument("--reference", type=Path, required=True)
+    parser.add_argument("--reference", type=Path, default=REFERENCE_PATH)
     parser.add_argument(
-        "--output-dir", type=Path, default=Path("reports/monitoring")
+        "--output-dir", type=Path, default=REPORT_DIR
     )
     return parser.parse_args()
 
 
-def load_jsonl_events(path: Path) -> list[dict[str, Any]]:
-    """Load direct event JSONL used for the governed or synthetic reference."""
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+def load_reference_events(path: Path) -> list[dict[str, Any]]:
+    """Load a reference with a declared, consistent provenance."""
+    events = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    source = events[0].get("reference_source") if events and isinstance(events[0], dict) else None
+    if not isinstance(source, str) or not source.strip() or any(
+        not isinstance(event, dict) or event.get("reference_source") != source
+        for event in events
+    ):
+        raise ValueError("Reference events need one non-empty reference_source")
+    return events
 
 
 def markdown_report(report: dict[str, Any]) -> str:
@@ -51,6 +64,20 @@ def markdown_report(report: dict[str, Any]) -> str:
         "",
         f"- Successful reference events: {drift['reference_successful_events']}",
         f"- Successful production events: {drift['production_successful_events']}",
+        "",
+        "## SQLite storage evidence",
+        "",
+        f"- Stored rows: {report['storage']['row_count']}",
+        f"- Successful rows: {report['storage']['successful_count']}",
+        f"- First timestamp: {report['storage']['earliest_timestamp']}",
+        f"- Last timestamp: {report['storage']['latest_timestamp']}",
+        f"- Last event ID: {report['storage']['latest_event_id']}",
+        "",
+        "## Evidently AI",
+        "",
+        f"- Status: {report['evidently']['status']}",
+        f"- Drifted columns: {report['evidently']['drifted_columns']}",
+        f"- Drifted share: {report['evidently']['drifted_share']}",
     ]
     lines.extend(_metric_lines("PSI", drift["numeric"], "psi"))
     lines.extend(
@@ -88,10 +115,17 @@ def main() -> int:
         print("Database and reference files must exist.", file=sys.stderr)
         return 2
 
-    report = build_monitoring_report(
-        load_jsonl_events(arguments.reference),
-        list_prediction_events(arguments.database),
-    )
+    try:
+        reference_events = load_reference_events(arguments.reference)
+        production_events = list_prediction_events(arguments.database)
+        report = build_monitoring_report(reference_events, production_events)
+        report["storage"] = storage_evidence(arguments.database)
+        report["evidently"] = build_evidently_report(
+            reference_events, production_events, arguments.output_dir
+        )
+    except ValueError as error:
+        print(f"Analysis failed: {error}", file=sys.stderr)
+        return 2
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
     (arguments.output_dir / "latest_report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"

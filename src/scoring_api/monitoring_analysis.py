@@ -6,18 +6,15 @@ from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
-
-NUMERIC_DRIFT_FEATURES = (
-    "heures_prevues",
-    "montant_demande_eur",
-    "pct_financement_demande",
+from scoring_api.monitoring_config import (
+    CATEGORICAL_DRIFT_FEATURES,
+    ERROR_RATE_ALERT_THRESHOLD,
+    MINIMUM_DRIFT_SAMPLE_SIZE,
+    NUMERIC_DRIFT_FEATURES,
+    P95_LATENCY_ALERT_THRESHOLD_MS,
+    PSI_ALERT_THRESHOLD,
+    UNKNOWN_CATEGORY_ALERT_THRESHOLD,
 )
-CATEGORICAL_DRIFT_FEATURES = ("modalite", "source_lead", "type_financement")
-PSI_ALERT_THRESHOLD = 0.20
-UNKNOWN_CATEGORY_ALERT_THRESHOLD = 0.05
-ERROR_RATE_ALERT_THRESHOLD = 0.05
-P95_LATENCY_ALERT_THRESHOLD_MS = 1000.0
-MINIMUM_DRIFT_SAMPLE_SIZE = 10
 
 
 def population_stability_index(

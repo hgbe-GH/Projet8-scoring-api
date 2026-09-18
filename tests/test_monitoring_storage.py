@@ -2,7 +2,11 @@ import json
 
 import pytest
 
-from scoring_api.monitoring_storage import import_render_export, list_prediction_events
+from scoring_api.monitoring_storage import (
+    import_render_export,
+    list_prediction_events,
+    storage_evidence,
+)
 
 
 def success_event(event_id: str = "event-1") -> dict[str, object]:
@@ -57,6 +61,19 @@ def test_import_render_export_reads_concatenated_pretty_json_objects(tmp_path) -
     assert imported == 2
 
 
+def test_import_render_export_reads_json_array(tmp_path) -> None:
+    export = tmp_path / "render-export.json"
+    export.write_text(
+        json.dumps([
+            {"message": "unrelated"},
+            {"message": "ML_EVENT " + json.dumps(success_event())},
+        ]),
+        encoding="utf-8",
+    )
+
+    assert import_render_export(export, tmp_path / "monitoring.db") == 1
+
+
 def test_import_render_export_rejects_malformed_monitoring_event(tmp_path) -> None:
     export = tmp_path / "render-export.jsonl"
     export.write_text(
@@ -65,3 +82,21 @@ def test_import_render_export_rejects_malformed_monitoring_event(tmp_path) -> No
 
     with pytest.raises(ValueError, match="Malformed ML_EVENT payload"):
         import_render_export(export, tmp_path / "monitoring.db")
+
+
+def test_storage_evidence_survives_a_new_connection(tmp_path) -> None:
+    export = tmp_path / "render.jsonl"
+    export.write_text(
+        json.dumps({"message": "ML_EVENT " + json.dumps(success_event())}) + "\n",
+        encoding="utf-8",
+    )
+    database = tmp_path / "monitoring.db"
+    import_render_export(export, database)
+
+    evidence = storage_evidence(database)
+
+    assert evidence["row_count"] == 1
+    assert evidence["successful_count"] == 1
+    assert evidence["earliest_timestamp"] == "2026-09-10T12:00:00+00:00"
+    assert evidence["latest_timestamp"] == "2026-09-10T12:00:00+00:00"
+    assert evidence["latest_event_id"] == "event-1"

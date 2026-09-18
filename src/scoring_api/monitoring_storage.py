@@ -46,7 +46,7 @@ def initialize_database(database_path: Path) -> None:
 
 
 def iter_json_values(raw_text: str) -> Iterator[dict[str, Any]]:
-    """Yield JSON objects from JSONL or concatenated Render CLI output."""
+    """Yield log objects from JSONL, concatenated JSON, or a JSON array."""
     decoder = json.JSONDecoder()
     position = 0
 
@@ -61,9 +61,11 @@ def iter_json_values(raw_text: str) -> Iterator[dict[str, Any]]:
         except json.JSONDecodeError as error:
             raise ValueError("Render export is not valid JSON") from error
 
-        if not isinstance(value, dict):
-            raise ValueError("Render export entries must be JSON objects")
-        yield value
+        entries = value if isinstance(value, list) else [value]
+        for entry in entries:
+            if not isinstance(entry, dict):
+                raise ValueError("Render export entries must be JSON objects")
+            yield entry
 
 
 def import_render_export(export_path: Path, database_path: Path) -> int:
@@ -99,6 +101,29 @@ def list_prediction_events(database_path: Path) -> list[dict[str, Any]]:
         ).fetchall()
 
     return [_row_to_event(row) for row in rows]
+
+
+def storage_evidence(database_path: Path) -> dict[str, Any]:
+    """Read durable row counts and bounds through a fresh SQLite connection."""
+    with sqlite3.connect(database_path) as connection:
+        row = connection.execute(
+            """
+            SELECT COUNT(*),
+                   SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END),
+                   MIN(timestamp), MAX(timestamp)
+            FROM prediction_events
+            """
+        ).fetchone()
+        latest = connection.execute(
+            "SELECT event_id FROM prediction_events ORDER BY timestamp DESC, event_id DESC LIMIT 1"
+        ).fetchone()
+    return {
+        "row_count": row[0],
+        "successful_count": row[1] or 0,
+        "earliest_timestamp": row[2],
+        "latest_timestamp": row[3],
+        "latest_event_id": latest[0] if latest else None,
+    }
 
 
 def _is_monitoring_envelope(envelope: dict[str, Any]) -> bool:

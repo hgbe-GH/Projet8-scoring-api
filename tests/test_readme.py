@@ -12,5 +12,10 @@ def test_readme_documents_the_local_monitoring_flow() -> None:
         "PSI",
         "synthetic",
         "RGPD",
+        "Evidently",
+        "Streamlit",
+        "monitoring_dashboard.py",
+        "requirements-monitoring.txt",
+        ".venv/bin/streamlit",
     ):
         assert required_term in readme
