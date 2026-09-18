@@ -62,7 +62,7 @@
     <section class="success">
       <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API est déployée sur Render. Après les contrôles CI réussis, Render déploie automatiquement la branche <code>main</code>. Les logs structurés, le stockage SQLite, le rapport Evidently et le dashboard Streamlit sont disponibles localement. Une référence privée Projet6 est préparée ; il manque encore un échantillon de production représentatif et une étude de performance pour conclure au-delà de la démonstration.
     </section>
-    <section class="warning"><strong>Publication en attente :</strong> la correction du contrat API et les 42 tests sont validés localement. La version publique Render doit encore recevoir le nouveau commit ; pour tester les booléens et les valeurs null, utiliser l’API locale.</section>
+    <section class="success"><strong>Publication validée :</strong> la correction du contrat API est disponible sur Render. Les 42 tests, le workflow GitHub Actions, l’OpenAPI public et une prédiction fictive sur <code>/predict</code> ont été vérifiés avec succès.</section>
 
     <h2>1. Le contexte de la mission</h2>
     <p>Le document OpenClassrooms raconte une mise en situation professionnelle : vous êtes Data Scientist. Une responsable, Chloé Dubois, vous demande de mettre un modèle de scoring en production pour qu’il puisse répondre presque en temps réel.</p>
@@ -150,12 +150,12 @@
       <li>démarrer l’image et tester <code>/health</code> ;</li>
       <li>autoriser le déploiement automatique sur Render après le succès des contrôles.</li>
     </ol>
-    <p>La première exécution GitHub est terminée avec succès : <a href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/33077306535">ouvrir le run CI/CD réussi</a>.</p>
+    <p>Le workflow du contrat corrigé est terminé avec succès : <a href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/35345672003">ouvrir le run CI/CD réussi</a>.</p>
 
     <h2>4. Ce qui reste à faire</h2>
 
-    <h3>Priorité 1 — conserver la preuve du déploiement</h3>
-    <p>L’API est disponible sur <a href="https://projet8-scoring-api.onrender.com/health">projet8-scoring-api.onrender.com/health</a>. Render reconstruit l’image Docker et vérifie <code>/health</code> après un push dont la CI GitHub est réussie. Une capture des pages GitHub Actions et Render permettra de le démontrer à la soutenance.</p>
+    <h3>Preuve du déploiement conservée</h3>
+    <p>L’API est disponible sur <a href="https://projet8-scoring-api.onrender.com/health">projet8-scoring-api.onrender.com/health</a> et Swagger sur <a href="https://projet8-scoring-api.onrender.com/docs">/docs</a>. Le schéma public expose bien les booléens, les valeurs nulles autorisées et les zéros valides. Une prédiction fictive a répondu HTTP 200 après le déploiement.</p>
 
     <h3>Priorité 2 — comparer la référence Projet6 à la production</h3>
     <p>Le monitoring local est en place. Il lit les événements SQLite et permet de suivre :</p>

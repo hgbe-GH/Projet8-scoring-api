@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Guide complet pour expliquer le Projet 8 : API FastAPI, Render, SQLite, Evidently AI et Streamlit.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2318231f'/%3E%3Cpath d='M18 17h28v8H27v7h16v8H27v7h19v8H18z' fill='%23f6f2e9'/%3E%3C/svg%3E">
+  <title>Guide d’explication — Projet 8 · Monitoring du scoring</title>
+  <style>
+    :root {
+      --ink: #18231f;
+      --paper: #f6f2e9;
+      --panel: #fffdf7;
+      --line: #c9c2b5;
+      --muted: #68716c;
+      --green: #174f3b;
+      --green-soft: #dbe8df;
+      --orange: #d96534;
+      --orange-soft: #f6dfd1;
+      --blue-soft: #dce9ef;
+      --max: 1120px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 17px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--green); text-underline-offset: 3px; }
+    a:hover { color: var(--orange); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(246, 242, 233, .94);
+      backdrop-filter: blur(12px);
+    }
+    .topbar-inner {
+      max-width: var(--max);
+      margin: auto;
+      padding: 13px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand { font-weight: 800; letter-spacing: -.02em; }
+    .top-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 7px 14px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: var(--ink);
+      color: white;
+      font-size: 14px;
+      font-weight: 750;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .button.secondary { background: transparent; color: var(--ink); }
+    main { max-width: var(--max); margin: auto; padding: 64px 24px 100px; }
+    .hero { padding: 38px 0 72px; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 16px; color: var(--orange); font-size: 13px; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+    h1, h2, h3 { line-height: 1.12; letter-spacing: -.035em; }
+    h1 { max-width: 850px; margin: 0; font-size: clamp(48px, 8vw, 92px); }
+    h2 { margin: 0 0 22px; font-size: clamp(34px, 5vw, 55px); }
+    h3 { margin: 0 0 10px; font-size: 23px; }
+    .lead { max-width: 790px; margin: 26px 0 34px; color: #35413c; font-size: 22px; }
+    .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+    .chip { padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); font-size: 14px; font-weight: 700; }
+    section { padding: 72px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 82px; }
+    .section-intro { max-width: 780px; color: #48534e; font-size: 19px; }
+    .summary-grid, .grid-2, .grid-3 { display: grid; gap: 16px; margin-top: 30px; }
+    .summary-grid { grid-template-columns: repeat(4, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .card {
+      padding: 25px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+    }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .metric { display: block; margin-bottom: 5px; color: var(--green); font-size: 36px; font-weight: 900; letter-spacing: -.05em; }
+    .label { color: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .contents { padding: 28px; border-radius: 18px; background: var(--ink); color: white; }
+    .contents a { color: white; text-decoration-color: #799488; }
+    .contents ol { columns: 2; column-gap: 50px; margin: 15px 0 0; padding-left: 24px; }
+    .contents li { margin-bottom: 9px; break-inside: avoid; }
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 32px; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+    .flow article { min-height: 190px; padding: 22px; border-right: 1px solid var(--line); background: var(--panel); }
+    .flow article:last-child { border-right: 0; }
+    .flow strong { display: block; margin: 18px 0 8px; font-size: 20px; }
+    .flow p { margin: 0; color: #58625d; font-size: 14px; }
+    .step { color: var(--orange); font: 800 12px/1 ui-monospace, monospace; }
+    ul.checks { padding: 0; list-style: none; }
+    ul.checks li { position: relative; margin: 12px 0; padding-left: 29px; }
+    ul.checks li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 900; }
+    .callout { margin: 28px 0; padding: 22px 25px; border-left: 5px solid var(--orange); border-radius: 0 14px 14px 0; background: var(--orange-soft); }
+    .callout.success { border-color: var(--green); background: var(--green-soft); }
+    .callout.info { border-color: #39718b; background: var(--blue-soft); }
+    table { width: 100%; margin-top: 26px; border-collapse: collapse; background: var(--panel); }
+    th, td { padding: 15px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--ink); color: white; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; }
+    code { padding: 2px 5px; border-radius: 5px; background: #e8e2d7; font: .88em ui-monospace, SFMono-Regular, Menlo, monospace; }
+    pre { overflow-x: auto; padding: 20px; border-radius: 14px; background: #14201b; color: #f6f2e9; font-size: 14px; line-height: 1.55; }
+    pre code { padding: 0; background: transparent; }
+    .oral { counter-reset: oral; }
+    .oral article { position: relative; padding: 24px 24px 24px 76px; border-top: 1px solid var(--line); }
+    .oral article::before { counter-increment: oral; content: counter(oral, decimal-leading-zero); position: absolute; left: 10px; top: 22px; color: var(--orange); font-size: 26px; font-weight: 900; }
+    .status { display: inline-block; padding: 4px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: 12px; font-weight: 850; text-transform: uppercase; }
+    footer { padding: 38px 24px; background: var(--ink); color: white; text-align: center; }
+    footer a { color: white; }
+    @media (max-width: 900px) {
+      .summary-grid, .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .flow { grid-template-columns: 1fr; }
+      .flow article { min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 640px) {
+      body { font-size: 16px; }
+      main { padding: 35px 18px 70px; }
+      .topbar-inner { padding: 10px 16px; }
+      .brand { display: none; }
+      .summary-grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .contents ol { columns: 1; }
+      section { padding: 52px 0; }
+      table { display: block; max-width: 100%; overflow-x: auto; }
+    }
+    @media print {
+      body { background: white; font-size: 11pt; }
+      .topbar { display: none; }
+      main { max-width: none; padding: 0; }
+      section, .card, table { break-inside: avoid; }
+      section { padding: 28px 0; }
+      h1 { font-size: 42pt; }
+      h2 { font-size: 27pt; }
+      a { color: inherit; text-decoration: none; }
+      .button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar" aria-label="Actions du guide">
+    <div class="topbar-inner">
+      <span class="brand">Projet 8 · Guide d’explication</span>
+      <div class="top-actions">
+        <a class="button secondary" href="presentation-soutenance.html">Voir les slides</a>
+        <button class="button" type="button" onclick="window.print()">Imprimer / PDF</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Dossier de lecture et trame orale</p>
+      <h1>Du modèle de scoring au monitoring de production.</h1>
+      <p class="lead">Ce document explique le Projet 8 de bout en bout : son contexte, les choix techniques, les corrections réalisées, les preuves de fonctionnement et la manière de le présenter en soutenance.</p>
+      <div class="chips" aria-label="Technologies principales">
+        <span class="chip">FastAPI</span><span class="chip">Docker</span><span class="chip">Render</span><span class="chip">SQLite</span><span class="chip">Evidently AI</span><span class="chip">Streamlit</span><span class="chip">GitHub Actions</span>
+      </div>
+    </header>
+
+    <section aria-labelledby="resume">
+      <p class="eyebrow">À retenir en 30 secondes</p>
+      <h2 id="resume">Le projet en quatre preuves.</h2>
+      <div class="summary-grid">
+        <article class="card"><span class="metric">44</span><span class="label">variables d’entrée</span><p>Le contrat de l’API correspond désormais aux données qui ont servi au modèle.</p></article>
+        <article class="card"><span class="metric">248/248</span><span class="label">scores reproduits</span><p>Les dossiers du holdout donnent exactement les probabilités sauvegardées.</p></article>
+        <article class="card"><span class="metric">42</span><span class="label">tests réussis</span><p>L’API, le monitoring, SQLite et les contrôles Docker sont vérifiés.</p></article>
+        <article class="card"><span class="metric">2/6</span><span class="label">drifts de démonstration</span><p>Evidently détecte les décalages synthétiques prévus, sans les confondre avec la production réelle.</p></article>
+      </div>
+      <div class="callout success"><strong>Conclusion :</strong> l’API est déployable et la chaîne de surveillance fonctionne. Le rapport actuel prouve le fonctionnement technique ; il faut encore un volume représentatif de vraies données Render et des labels futurs pour conclure sur la dérive et la qualité métier en production.</div>
+    </section>
+
+    <section aria-labelledby="sommaire">
+      <div class="contents">
+        <h2 id="sommaire">Sommaire</h2>
+        <ol>
+          <li><a href="#contexte">Contexte et objectif</a></li>
+          <li><a href="#architecture">Architecture complète</a></li>
+          <li><a href="#realise">Tout ce qui a été réalisé</a></li>
+          <li><a href="#modele">Audit du modèle et des données</a></li>
+          <li><a href="#monitoring">Evidently et Streamlit</a></li>
+          <li><a href="#sqlite">Preuve SQLite</a></li>
+          <li><a href="#resultats">Résultats à commenter</a></li>
+          <li><a href="#local-render">Local ou Render ?</a></li>
+          <li><a href="#oral">Déroulé oral conseillé</a></li>
+          <li><a href="#liens">Liens et checklist</a></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="contexte" aria-labelledby="titre-contexte">
+      <p class="eyebrow">01 · Contexte</p>
+      <h2 id="titre-contexte">Pourquoi ce projet existe.</h2>
+      <p class="section-intro">Le Projet 8 reprend un modèle de scoring produit dans le Projet 6 et le place dans un cadre proche de la production. L’enjeu ne consiste pas seulement à obtenir un score : il faut servir le modèle, tracer les prédictions, surveiller les données et rendre le résultat compréhensible.</p>
+      <div class="grid-2">
+        <article class="card">
+          <h3>Besoin métier</h3>
+          <ul class="checks">
+            <li>Recevoir un dossier et calculer son risque presque en temps réel.</li>
+            <li>Appliquer un seuil métier de <strong>0,06</strong> pour produire un drapeau de vigilance.</li>
+            <li>Conserver une trace exploitable de chaque prédiction.</li>
+            <li>Repérer les changements entre les données de référence et les données reçues.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Objectif technique</h3>
+          <ul class="checks">
+            <li>Exposer le modèle avec une API FastAPI documentée par Swagger.</li>
+            <li>Construire une image Docker reproductible et la publier sur Render.</li>
+            <li>Persister localement les événements dans SQLite.</li>
+            <li>Analyser le drift avec Evidently et l’afficher dans Streamlit.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="architecture" aria-labelledby="titre-architecture">
+      <p class="eyebrow">02 · Architecture</p>
+      <h2 id="titre-architecture">Le flux complet, de la requête au dashboard.</h2>
+      <div class="flow" role="list" aria-label="Flux de monitoring">
+        <article role="listitem"><span class="step">01 / SERVIR</span><strong>Render + FastAPI</strong><p>Expose <code>/predict</code>, <code>/health</code> et Swagger.</p></article>
+        <article role="listitem"><span class="step">02 / TRACER</span><strong>Logs ML_EVENT</strong><p>Écrit l’identifiant, les entrées, le score, le statut et la latence.</p></article>
+        <article role="listitem"><span class="step">03 / STOCKER</span><strong>SQLite local</strong><p>Importe les événements de façon idempotente grâce à <code>event_id</code>.</p></article>
+        <article role="listitem"><span class="step">04 / COMPARER</span><strong>Evidently AI</strong><p>Compare six variables entre référence et période courante.</p></article>
+        <article role="listitem"><span class="step">05 / LIRE</span><strong>Streamlit</strong><p>Présente volumes, erreurs, latence, drift et preuve de stockage.</p></article>
+      </div>
+      <div class="callout info"><strong>Choix d’architecture :</strong> l’API publique tourne sur Render. SQLite, les données de référence privées, Evidently et Streamlit restent en local. Ce choix évite de dépendre du disque éphémère du service Render gratuit et garde les données de monitoring hors du dépôt Git.</div>
+    </section>
+
+    <section id="realise" aria-labelledby="titre-realise">
+      <p class="eyebrow">03 · Réalisations</p>
+      <h2 id="titre-realise">Ce qui a été fait sur l’ensemble du projet.</h2>
+      <div class="grid-3">
+        <article class="card"><h3>API de scoring</h3><ul><li>Endpoint <code>POST /predict</code>.</li><li>Validation des 44 champs.</li><li>Réponse avec score, seuil et drapeau.</li><li>Endpoint <code>GET /health</code>.</li><li>Documentation Swagger automatique.</li></ul></article>
+        <article class="card"><h3>Contrat corrigé</h3><ul><li>5 champs booléens correctement typés.</li><li>17 champs historiquement manquants acceptent <code>null</code>.</li><li>Les zéros valides sont acceptés.</li><li>Les valeurs négatives incohérentes restent refusées.</li></ul></article>
+        <article class="card"><h3>Déploiement</h3><ul><li>Image Docker contrôlée.</li><li>Service public sur Render.</li><li>GitHub Actions sur chaque push.</li><li>Tests puis smoke test du conteneur.</li></ul></article>
+        <article class="card"><h3>Observabilité</h3><ul><li>Logs structurés <code>ML_EVENT</code>.</li><li>Statut HTTP et erreurs.</li><li>Durée de traitement.</li><li>Identifiant unique pour chaque événement.</li></ul></article>
+        <article class="card"><h3>Monitoring</h3><ul><li>Import des logs vers SQLite.</li><li>Déduplication par clé primaire.</li><li>Rapport de drift Evidently.</li><li>Métriques locales complémentaires.</li></ul></article>
+        <article class="card"><h3>Restitution</h3><ul><li>Dashboard Streamlit.</li><li>Rapport Evidently HTML.</li><li>Preuve SQLite documentée.</li><li>Slides et guide de soutenance.</li></ul></article>
+      </div>
+    </section>
+
+    <section id="modele" aria-labelledby="titre-modele">
+      <p class="eyebrow">04 · Modèle et données</p>
+      <h2 id="titre-modele">Pourquoi le modèle n’a pas été réentraîné.</h2>
+      <p class="section-intro">L’artefact du Projet 8 et celui du Projet 6 sont identiques octet par octet. Les contrôles ont montré que le problème venait du contrat d’entrée de l’API, pas du modèle.</p>
+      <table>
+        <thead><tr><th>Contrôle</th><th>Résultat vérifié</th><th>Décision</th></tr></thead>
+        <tbody>
+          <tr><td>Population</td><td>994 dossiers d’entraînement et 248 de validation temporelle.</td><td>Effectifs conformes aux métadonnées.</td></tr>
+          <tr><td>Reproduction des scores</td><td>248 dossiers acceptés sur 248 ; différence maximale <code>0,0</code>.</td><td>Conserver le modèle actuel.</td></tr>
+          <tr><td>Classement</td><td>ROC AUC <strong>0,7764</strong> ; average precision <strong>0,7741</strong>.</td><td>Le modèle sépare utilement les groupes sur le holdout.</td></tr>
+          <tr><td>Seuil 0,06</td><td>93 vrais positifs, 153 faux positifs, 0 faux négatif, 2 vrais négatifs.</td><td>Garder le seuil documenté, avec une vigilance sur le volume d’alertes.</td></tr>
+          <tr><td>Réentraînement</td><td>Aucun nouveau jeu étiqueté indépendant.</td><td>Ne pas remplacer le modèle sans preuve de gain.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><strong>Point à dire :</strong> le seuil de 0,06 protège fortement contre les faux négatifs, mais signale 246 dossiers sur 248. Il correspond à une vigilance très large et devra être réévalué avec des données de production étiquetées et une validation indépendante.</div>
+    </section>
+
+    <section id="monitoring" aria-labelledby="titre-monitoring">
+      <p class="eyebrow">05 · Evidently AI et Streamlit</p>
+      <h2 id="titre-monitoring">Ce que le dashboard surveille.</h2>
+      <div class="grid-2">
+        <article class="card">
+          <h3>Six variables suivies</h3>
+          <ul><li><code>heures_prevues</code></li><li><code>montant_demande_eur</code></li><li><code>pct_financement_demande</code></li><li><code>modalite</code></li><li><code>source_lead</code></li><li><code>type_financement</code></li></ul>
+        </article>
+        <article class="card">
+          <h3>Indicateurs affichés</h3>
+          <ul><li>Nombre d’appels et taux d’erreur.</li><li>Latence moyenne et percentile 95.</li><li>Nombre et part de variables en drift.</li><li>Tests statistiques et distributions.</li><li>Nombre de lignes persistées dans SQLite.</li><li>Période couverte et dernier événement.</li></ul>
+        </article>
+      </div>
+      <p>La référence privée utilise les <strong>248 lignes complètes du holdout temporel du Projet 6</strong>. Les 994 lignes d’entraînement ne conviennent pas directement : <code>source_lead</code> manque sur 879 d’entre elles, ce qui créerait une référence biaisée après suppression des lignes incomplètes.</p>
+    </section>
+
+    <section id="sqlite" aria-labelledby="titre-sqlite">
+      <p class="eyebrow">06 · Persistance</p>
+      <h2 id="titre-sqlite">La preuve que SQLite stocke réellement les événements.</h2>
+      <div class="summary-grid">
+        <article class="card"><span class="metric">30</span><span class="label">lignes persistées</span><p>Les 30 événements simulés sont relus depuis une nouvelle connexion.</p></article>
+        <article class="card"><span class="metric">30</span><span class="label">prédictions réussies</span><p>Aucune erreur dans le scénario de démonstration.</p></article>
+        <article class="card"><span class="metric">0</span><span class="label">doublon réimporté</span><p>Une seconde importation insère zéro ligne grâce à <code>event_id</code>.</p></article>
+        <article class="card"><span class="metric">29 min</span><span class="label">période couverte</span><p>Du 10 septembre 2026 à 12:00 UTC à 12:29 UTC.</p></article>
+      </div>
+      <pre><code>SELECT COUNT(*) AS rows,
+       SUM(status = 'success') AS successes,
+       MIN(timestamp) AS first_event,
+       MAX(timestamp) AS last_event
+FROM prediction_events;</code></pre>
+      <p>Cette preuve est exploitable en soutenance dans <a href="monitoring-demo-evidence.md">monitoring-demo-evidence.md</a>. La base elle-même reste locale et hors Git, car elle contient les événements détaillés.</p>
+    </section>
+
+    <section id="resultats" aria-labelledby="titre-resultats">
+      <p class="eyebrow">07 · Résultats</p>
+      <h2 id="titre-resultats">Comment commenter le drift sans surinterpréter.</h2>
+      <table>
+        <thead><tr><th>Résultat de démonstration</th><th>Lecture correcte</th></tr></thead>
+        <tbody>
+          <tr><td><strong>2 variables sur 6</strong> détectées en drift.</td><td>Le pipeline Evidently réagit aux changements introduits volontairement.</td></tr>
+          <tr><td><code>heures_prevues</code> : PSI 11,77 et test K-S très significatif.</td><td>La distribution simulée passe d’environ 15–35 heures à 60–90 heures : le décalage est massif.</td></tr>
+          <tr><td><code>modalite</code> : 50 % de catégories nouvelles ; Jensen–Shannon ≈ 0,589.</td><td>La catégorie <code>hybride</code> apparaît seulement dans la production simulée.</td></tr>
+          <tr><td>PSI supérieur à 0,20 sur deux autres variables sans alerte Evidently correspondante.</td><td>Avec seulement 30 observations et dix tranches, le PSI est instable ; il faut plus de données.</td></tr>
+          <tr><td>30 appels, 0 erreur, p95 de 25 ms.</td><td>Ce sont des valeurs générées pour prouver l’affichage, pas une mesure de performance Render.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><strong>Formulation recommandée :</strong> « Ce scénario synthétique valide la chaîne de détection. Il ne prouve pas qu’un drift existe déjà en production. Pour cela, je dois importer une période Render représentative et comparer les mêmes variables à la référence Projet 6. »</div>
+    </section>
+
+    <section id="local-render" aria-labelledby="titre-local-render">
+      <p class="eyebrow">08 · Environnement</p>
+      <h2 id="titre-local-render">Ce qui doit être en ligne et ce qui reste local.</h2>
+      <div class="grid-2">
+        <article class="card">
+          <span class="status">Public · Render</span>
+          <h3>API de scoring</h3>
+          <ul><li>Endpoint de santé.</li><li>Swagger.</li><li>Endpoint de prédiction.</li><li>Image Docker issue du dépôt GitHub.</li></ul>
+          <p><a href="https://projet8-scoring-api.onrender.com/docs">Ouvrir Swagger public ↗</a></p>
+        </article>
+        <article class="card">
+          <span class="status">Privé · local</span>
+          <h3>Chaîne de monitoring</h3>
+          <ul><li>Export des logs Render.</li><li>Base SQLite.</li><li>Référence Projet 6.</li><li>Rapports Evidently.</li><li>Dashboard Streamlit.</li></ul>
+          <p><a href="http://127.0.0.1:8501">Ouvrir Streamlit local ↗</a></p>
+        </article>
+      </div>
+      <p>Pour la soutenance, Internet sert à montrer Render et GitHub Actions. Le poste local sert à montrer Streamlit, SQLite et Evidently. La capture du dashboard constitue un secours si Streamlit n’est pas lancé.</p>
+    </section>
+
+    <section id="oral" aria-labelledby="titre-oral">
+      <p class="eyebrow">09 · Trame orale</p>
+      <h2 id="titre-oral">Une explication simple en sept étapes.</h2>
+      <div class="oral">
+        <article><h3>Présenter le besoin</h3><p>« Je pars d’un modèle de scoring déjà entraîné. Mon objectif est de le rendre accessible par API et de surveiller les données qu’il reçoit. »</p></article>
+        <article><h3>Montrer l’architecture</h3><p>« Render sert le modèle. Les prédictions produisent des logs structurés. Je les importe dans SQLite, puis Evidently compare la production à la référence et Streamlit affiche les résultats. »</p></article>
+        <article><h3>Exécuter une prédiction</h3><p>Ouvrir Swagger, coller le JSON fictif, lancer <code>POST /predict</code>, puis expliquer <code>risk_score</code>, <code>threshold</code> et <code>risk_flag</code>.</p></article>
+        <article><h3>Prouver la qualité du contrat</h3><p>« J’ai corrigé les booléens, les valeurs nulles et les zéros valides. Les 248 dossiers de validation reproduisent exactement les scores du Projet 6. »</p></article>
+        <article><h3>Montrer SQLite</h3><p>« La base contient 30 événements. Une deuxième importation n’ajoute aucun doublon grâce à la clé <code>event_id</code>. »</p></article>
+        <article><h3>Commenter Evidently</h3><p>« Deux variables sont détectées dans le scénario synthétique : les heures prévues et la modalité. Ces données prouvent la détection, pas un drift réel de production. »</p></article>
+        <article><h3>Conclure avec les limites</h3><p>« La chaîne technique est opérationnelle. La prochaine étape est d’importer une période représentative, puis d’obtenir les labels futurs avant de décider d’un réentraînement ou d’un nouveau seuil. »</p></article>
+      </div>
+    </section>
+
+    <section id="liens" aria-labelledby="titre-liens">
+      <p class="eyebrow">10 · Démonstration</p>
+      <h2 id="titre-liens">Liens utiles et checklist finale.</h2>
+      <div class="grid-2">
+        <article class="card">
+          <h3>Liens</h3>
+          <ul>
+            <li><a href="https://projet8-scoring-api.onrender.com/health">Render · état de l’API</a></li>
+            <li><a href="https://projet8-scoring-api.onrender.com/docs">Render · Swagger</a></li>
+            <li><a href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/35345672003">GitHub Actions · CI validée</a></li>
+            <li><a href="http://127.0.0.1:8501">Streamlit local</a></li>
+            <li><a href="presentation-soutenance.html">Présentation HTML</a></li>
+            <li><a href="model-data-audit.md">Audit du modèle et des données</a></li>
+            <li><a href="monitoring-demo-evidence.md">Preuve SQLite et Evidently</a></li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Avant la soutenance</h3>
+          <ul class="checks">
+            <li>Ouvrir Render une minute avant la démo pour réveiller le service.</li>
+            <li>Lancer l’API locale de secours et Streamlit.</li>
+            <li>Ouvrir les slides, Swagger, Streamlit et la preuve SQLite.</li>
+            <li>Copier le JSON de démonstration depuis les slides.</li>
+            <li>Garder la capture du dashboard accessible.</li>
+            <li>Dire explicitement quelles données sont synthétiques.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><strong>Projet 8 · API de scoring et monitoring des données</strong></p>
+    <p>Dernière validation : 18 septembre 2026 · <a href="../README.md">README technique</a></p>
+  </footer>
+</body>
+</html>

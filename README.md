@@ -8,6 +8,11 @@ démonstration](docs/presentation-soutenance.html). Elle renvoie vers l'API
 publique, Streamlit local, la preuve SQLite et [l'audit du modèle et des
 données](docs/model-data-audit.md).
 
+Le [guide HTML d'explication du projet](docs/guide-explication-projet.html)
+complète les slides avec le contexte, toutes les réalisations, les résultats à
+commenter, les limites et une trame orale sous forme de points. Il peut être
+imprimé en PDF depuis le navigateur.
+
 ## Prérequis
 
 - Python 3.12
@@ -194,6 +199,9 @@ un service web Docker Render :
 
 - API publique : `https://projet8-scoring-api.onrender.com`
 - Contrôle de santé : `https://projet8-scoring-api.onrender.com/health`
+- Swagger public : `https://projet8-scoring-api.onrender.com/docs`
+- CI validée du contrat corrigé :
+  `https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/35345672003`
 
 Render construit le `Dockerfile` du dépôt et vérifie `/health` avant de rendre
 une nouvelle version accessible. Le service est configuré sur la branche

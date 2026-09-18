@@ -202,12 +202,12 @@
         <div>
           <p class="lede">Ouvrir Swagger, choisir <code>POST /predict</code>, cliquer sur « Try it out », coller le JSON de test puis exécuter.</p>
           <div class="actions">
-            <a class="action" href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">Swagger local corrigé ↗</a>
+            <a class="action" href="https://projet8-scoring-api.onrender.com/docs" target="_blank" rel="noopener noreferrer">Swagger Render ↗</a>
             <a class="action secondary" href="https://projet8-scoring-api.onrender.com/health" target="_blank" rel="noopener noreferrer">Render /health ↗</a>
           </div>
           <button class="action secondary" id="copy-payload" type="button">Copier le JSON de démo</button>
           <p class="footnote" role="status" id="copy-status">Données fictives, compatibles avec les 44 champs requis.</p>
-          <p class="notice">Utiliser l’API locale pour le contrat corrigé. L’appel crée un événement de test local ; le rapport Streamlit présenté ici utilise une simulation distincte.</p>
+          <p class="notice">Le contrat corrigé est publié sur Render. L’appel crée un événement de test public ; le rapport Streamlit présenté ici utilise une simulation locale distincte.</p>
         </div>
         <div>
           <div class="ruled"><span class="small-label">Contrat de réponse</span><div class="code-panel"><pre>risk_score    nombre entre 0 et 1
@@ -352,14 +352,14 @@ FROM prediction_events;</pre></div>
       <table class="evidence-table">
         <thead><tr><th>Élément</th><th>État vérifié</th><th>Portée</th></tr></thead>
         <tbody>
-          <tr><td>API et déploiement</td><td>Render <code>/health</code> et <code>/docs</code> répondent HTTP 200 ; contrat corrigé testé en local</td><td>Publication du correctif Render à confirmer.</td></tr>
-          <tr><td>Tests et CI</td><td>42 tests locaux réussis ; dernier workflow GitHub publié réussi</td><td>Contrat API, monitoring, stockage et construction Docker contrôlés.</td></tr>
+          <tr><td>API et déploiement</td><td>Render <code>/health</code>, <code>/docs</code> et <code>/predict</code> répondent HTTP 200 avec le contrat corrigé</td><td>Requête fictive publique vérifiée après déploiement.</td></tr>
+          <tr><td>Tests et CI</td><td>42 tests locaux réussis ; workflow GitHub du correctif réussi</td><td>Contrat API, monitoring, stockage et construction Docker contrôlés.</td></tr>
           <tr><td>Monitoring</td><td>SQLite, Evidently et Streamlit exécutés de bout en bout</td><td>Scénario synthétique reproductible, pas une conclusion de production.</td></tr>
           <tr><td>Modèle et contrat</td><td>Artefact identique au Projet6 ; 248 / 248 scores API reproduits</td><td>Pas de labels de production pour mesurer la qualité future.</td></tr>
           <tr><td>À poursuivre</td><td>Logs Render représentatifs, performance, gouvernance et rétention</td><td>Conditions nécessaires pour une surveillance durable.</td></tr>
         </tbody>
       </table>
-      <div class="actions"><a class="action secondary" href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/35325835549" target="_blank" rel="noopener noreferrer">Workflow CI réussi ↗</a><a class="action secondary" href="../README.md" target="_blank" rel="noopener noreferrer">README technique ↗</a></div>
+      <div class="actions"><a class="action secondary" href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/35345672003" target="_blank" rel="noopener noreferrer">Workflow CI réussi ↗</a><a class="action secondary" href="guide-explication-projet.html" target="_blank" rel="noopener noreferrer">Guide complet ↗</a><a class="action secondary" href="../README.md" target="_blank" rel="noopener noreferrer">README technique ↗</a></div>
       <aside class="notes"><strong>À dire :</strong> Ne pas confondre succès technique et qualité métier continue. Le pipeline de surveillance fonctionne. Pour conclure sur la dérive réelle ou réentraîner, il faut un échantillon de production, des labels futurs et des critères d’acceptation.</aside>
     </section>
 
@@ -367,7 +367,7 @@ FROM prediction_events;</pre></div>
       <p class="kicker">09 / Parcours de démo</p>
       <h2>Trois preuves, une histoire claire.</h2>
       <div class="three-col">
-        <div class="ruled"><span class="small-label">1 · Servir</span><h3>API locale / Swagger</h3><p>Montrer Render /health, puis envoyer le JSON sur l’API locale corrigée.</p><a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">Ouvrir Swagger ↗</a></div>
+        <div class="ruled"><span class="small-label">1 · Servir</span><h3>API Render / Swagger</h3><p>Montrer Render /health, puis envoyer le JSON sur l’API publique corrigée.</p><a href="https://projet8-scoring-api.onrender.com/docs" target="_blank" rel="noopener noreferrer">Ouvrir Swagger ↗</a></div>
         <div class="ruled"><span class="small-label">2 · Observer</span><h3>Streamlit / Evidently</h3><p>Lire les 2 variables décalées et l’avertissement « synthétique ».</p><a href="http://127.0.0.1:8501" target="_blank" rel="noopener noreferrer">Ouvrir Streamlit ↗</a></div>
         <div class="ruled"><span class="small-label">3 · Prouver</span><h3>SQLite / GitHub</h3><p>Afficher les 30 lignes persistées, puis la CI et l’audit du modèle.</p><a href="monitoring-demo-evidence.md" target="_blank" rel="noopener noreferrer">Preuve SQLite ↗</a></div>
       </div>
