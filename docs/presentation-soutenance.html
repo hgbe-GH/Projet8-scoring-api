@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1317'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Arial' font-size='32' font-weight='bold' fill='%23d1f28a'%3E08%3C/text%3E%3C/svg%3E">
+  <title>Projet 8 · Démo et soutenance</title>
+  <style>
+    :root { --bg:#0b1317; --surface:#142026; --ink:#f1f3ec; --muted:#a5b5b9; --line:#34454b; --accent:#d1f28a; --warn:#f0b37e; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button, a { -webkit-tap-highlight-color:transparent; }
+    a { color:var(--accent); text-underline-offset:.22em; }
+    a:hover { color:#edffc7; }
+    button { font:inherit; cursor:pointer; }
+    button:focus-visible,a:focus-visible,summary:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+    .mono,.kicker,.overline,.slide-count,.small-label,code,pre { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .topbar,.bottombar { width:100%; display:flex; align-items:center; justify-content:space-between; gap:18px; padding:16px clamp(20px,4vw,64px); background:rgba(11,19,23,.96); z-index:10; }
+    .topbar { border-bottom:1px solid var(--line); }
+    .brand { display:flex; align-items:baseline; gap:14px; color:var(--ink); text-decoration:none; }
+    .brand strong { font-size:1.16rem; letter-spacing:-.05em; }
+    .brand span { color:var(--muted); font-size:.8rem; letter-spacing:.12em; text-transform:uppercase; }
+    .topbar time { color:var(--muted); font-size:.78rem; }
+    .deck { width:min(1340px,calc(100% - 8vw)); min-height:calc(100svh - 133px); margin:auto; display:flex; align-items:center; }
+    .slide { width:100%; padding:42px 0 58px; }
+    .js .slide:not(.is-active) { display:none; }
+    .slide.is-active { animation:arrive .38s ease both; }
+    @keyframes arrive { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .kicker,.overline,.small-label { color:var(--accent); text-transform:uppercase; letter-spacing:.17em; font-size:.78rem; font-weight:700; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font-size:clamp(3.5rem,8.2vw,8.9rem); letter-spacing:-.09em; line-height:.92; max-width:1050px; margin-bottom:34px; }
+    h2 { font-size:clamp(2.5rem,5.6vw,5.7rem); letter-spacing:-.075em; line-height:.99; max-width:1150px; margin-bottom:28px; }
+    h3 { font-size:clamp(1.25rem,2vw,1.8rem); letter-spacing:-.04em; margin-bottom:12px; }
+    p,li { line-height:1.54; }
+    .lede { font-size:clamp(1.16rem,2.1vw,1.65rem); line-height:1.43; max-width:850px; color:var(--muted); }
+    .hero { min-height:calc(100svh - 190px); display:flex; flex-direction:column; justify-content:center; position:relative; isolation:isolate; }
+    .hero::after { content:"08"; position:absolute; right:-2vw; bottom:-7vw; z-index:-1; color:#17262c; font-size:min(42vw,520px); font-weight:850; letter-spacing:-.14em; line-height:.8; }
+    .hero .tagline { color:var(--accent); text-transform:uppercase; letter-spacing:.2em; margin-bottom:24px; font-size:.78rem; font-weight:700; }
+    .hero .lede { color:var(--ink); max-width:670px; }
+    .hero-bottom { display:flex; flex-wrap:wrap; gap:14px 38px; align-items:center; border-top:1px solid var(--line); padding-top:16px; margin-top:25px; color:var(--muted); font-size:.88rem; }
+    .hero-bottom strong { color:var(--ink); }
+    .two-col { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr); gap:clamp(28px,6vw,100px); align-items:start; }
+    .three-col { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; }
+    .ruled { border-top:1px solid var(--line); padding-top:17px; }
+    .ruled p { color:var(--muted); margin-bottom:0; }
+    .big-number { font-size:clamp(4rem,10vw,9rem); font-weight:750; letter-spacing:-.105em; line-height:.85; margin-bottom:16px; }
+    .big-number em { font-size:.33em; font-style:normal; color:var(--muted); letter-spacing:-.04em; }
+    .metric-stack { display:grid; gap:24px; }
+    .metric-stack .ruled strong { display:block; font-size:clamp(1.7rem,3vw,3rem); letter-spacing:-.07em; margin:3px 0 4px; }
+    .footnote { color:var(--muted); font-size:.86rem; max-width:860px; }
+    .flow { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; margin:52px 0 34px; }
+    .flow article { border-top:2px solid var(--accent); padding-top:14px; min-height:170px; position:relative; }
+    .flow article:not(:last-child)::after { content:"→"; color:var(--accent); position:absolute; right:-14px; top:13px; font-size:1.2rem; }
+    .flow .step { color:var(--accent); font:700 .77rem ui-monospace,monospace; letter-spacing:.12em; }
+    .flow strong { display:block; font-size:clamp(1.13rem,1.75vw,1.7rem); line-height:1.08; letter-spacing:-.05em; margin:15px 0 10px; }
+    .flow p { color:var(--muted); font-size:.87rem; max-width:21ch; }
+    .rule-list { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
+    .rule-list li { display:grid; grid-template-columns:minmax(150px,.5fr) 1fr; gap:24px; padding:13px 0; border-bottom:1px solid var(--line); }
+    .rule-list li span:first-child { color:var(--muted); }
+    .actions { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:28px 0; }
+    .action { display:inline-flex; justify-content:center; align-items:center; min-height:46px; padding:10px 18px; border:1px solid var(--accent); border-radius:4px; color:var(--bg); background:var(--accent); text-decoration:none; font-weight:750; font-size:.9rem; }
+    .action:hover { background:#edffc7; color:var(--bg); }
+    .action.secondary { background:transparent; color:var(--accent); }
+    .action.secondary:hover { background:rgba(209,242,138,.1); }
+    .code-panel { border-left:3px solid var(--accent); background:var(--surface); padding:18px 22px; overflow:auto; }
+    code { color:#e0f6ad; }
+    pre { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; font-size:.79rem; margin:0; }
+    details { border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:14px 0; margin:16px 0; }
+    summary { cursor:pointer; color:var(--accent); font-weight:700; }
+    details .code-panel { margin-top:16px; max-height:32vh; }
+    .sql-result { display:flex; flex-wrap:wrap; gap:18px 48px; padding:24px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .sql-result strong { display:block; font-size:clamp(2.6rem,6vw,6rem); letter-spacing:-.08em; line-height:1; }
+    .sql-result span { color:var(--muted); font-size:.85rem; }
+    .drift-number { display:flex; align-items:baseline; gap:14px; }
+    .drift-number strong { font-size:clamp(6rem,13vw,12rem); line-height:.82; letter-spacing:-.11em; }
+    .drift-number span { font-size:clamp(1.2rem,3vw,2.5rem); color:var(--muted); }
+    .compare { margin:26px 0; border-top:1px solid var(--line); }
+    .compare-row { display:grid; grid-template-columns:180px 1fr 1fr; gap:20px; align-items:center; border-bottom:1px solid var(--line); padding:15px 0; }
+    .compare-row .name { color:var(--muted); font-size:.9rem; }
+    .bar { height:18px; background:#25363b; position:relative; overflow:hidden; }
+    .bar i { display:block; height:100%; background:var(--accent); }
+    .bar.production i { background:var(--warn); }
+    .compare-row strong { font-size:.89rem; }
+    .compare-row small { display:block; color:var(--muted); font-size:.75rem; margin-top:4px; }
+    .screenshot { border:1px solid var(--line); background:#fff; padding:8px; margin:0; }
+    .screenshot img { display:block; width:100%; max-height:55vh; object-fit:cover; object-position:top; }
+    .screenshot figcaption { color:#4b5960; font-size:.77rem; padding:8px 4px 1px; }
+    .evidence-table { width:100%; border-collapse:collapse; margin:20px 0; }
+    .evidence-table th,.evidence-table td { border-bottom:1px solid var(--line); padding:12px 10px; text-align:left; vertical-align:top; }
+    .evidence-table th { color:var(--muted); font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700; }
+    .evidence-table td:last-child { color:var(--muted); }
+    .notice { border-left:3px solid var(--warn); padding:12px 0 12px 19px; color:#e5d1c1; margin:22px 0; }
+    .notes { display:none; margin-top:26px; padding:18px 22px; border-left:3px solid var(--accent); background:var(--surface); color:var(--muted); max-width:950px; }
+    .show-notes .slide.is-active .notes { display:block; }
+    .notes strong { color:var(--accent); }
+    .bottombar { position:sticky; bottom:0; border-top:1px solid var(--line); min-height:66px; }
+    .progress { position:absolute; left:0; bottom:0; height:3px; background:var(--accent); width:10%; transition:width .25s ease; }
+    .bottombar .hint { color:var(--muted); font-size:.78rem; }
+    .controls { display:flex; align-items:center; gap:9px; }
+    .controls button { border:1px solid var(--line); color:var(--ink); background:transparent; border-radius:3px; width:37px; height:34px; }
+    .controls button:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+    .controls button:disabled { opacity:.36; cursor:not-allowed; }
+    .slide-count { color:var(--muted); min-width:65px; text-align:center; font-size:.78rem; }
+    @media (max-width:800px) {
+      .topbar time,.bottombar .hint { display:none; }
+      .deck { width:calc(100% - 40px); min-height:calc(100svh - 125px); align-items:flex-start; }
+      .slide { padding:38px 0 48px; }
+      .hero { min-height:calc(100svh - 230px); }
+      .two-col,.three-col { grid-template-columns:1fr; gap:28px; }
+      .flow { grid-template-columns:1fr 1fr; }
+      .flow article { min-height:115px; }
+      .flow article::after { display:none; }
+      .compare-row { grid-template-columns:1fr 1fr; gap:8px 14px; }
+      .compare-row .name { grid-column:1/-1; }
+      .rule-list li { grid-template-columns:1fr; gap:2px; }
+      .screenshot img { max-height:45vh; }
+    }
+    @media (max-width:480px) { .flow { grid-template-columns:1fr; } .flow article { min-height:auto; } h1 { font-size:3.1rem; } }
+    @media (max-height:800px) and (min-width:801px) {
+      .slide { padding:22px 0 28px; }
+      h2 { font-size:clamp(2.7rem,4.4vw,4.7rem); margin-bottom:18px; }
+      .lede { font-size:1.25rem; }
+      .metric-stack { gap:12px; }
+      .ruled { padding-top:11px; }
+      .flow { margin:30px 0 18px; }
+      .compare { margin:16px 0; }
+      .compare-row { padding:9px 0; }
+      .drift-number strong { font-size:7.5rem; }
+    }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; } }
+    @media print {
+      @page { size:landscape; margin:0; }
+      html,body { background:var(--bg)!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .topbar,.bottombar,.notes,.actions button { display:none!important; }
+      .deck { display:block; width:100%; }
+      .slide,.js .slide:not(.is-active) { display:block!important; min-height:100vh; page-break-after:always; break-after:page; padding:7vh 6vw; }
+      .hero { min-height:78vh; }
+      h1 { font-size:7rem; } h2 { font-size:4.8rem; }
+      details .code-panel { max-height:none; }
+    }
+  </style>
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#slide-1" aria-label="Revenir à la première diapositive"><strong>MATCHERS</strong><span>Projet 08 / Scoring API</span></a>
+    <time datetime="2026-09-18">État vérifié · 18 septembre 2026</time>
+  </header>
+
+  <main class="deck" id="deck">
+    <section class="slide is-active" id="slide-1" aria-label="Ouverture">
+      <div class="hero">
+        <p class="tagline">Soutenance · Démonstration guidée</p>
+        <h1>Du modèle<br>au service<br>surveillé.</h1>
+        <p class="lede">Un modèle du Projet6 exposé par API, déployé sur Render et suivi avec SQLite, Evidently AI et Streamlit.</p>
+        <div class="hero-bottom"><span><strong>44</strong> variables d’entrée</span><span><strong>2</strong> routes API</span><span><strong>6</strong> variables surveillées</span><span>Démo locale + API publique</span></div>
+      </div>
+      <aside class="notes"><strong>À dire :</strong> « Mon objectif est de rendre utilisable un modèle de risque de non-finalisation des dossiers gagnés, puis de montrer comment je surveille le service et ses entrées. » Les résultats de drift présentés aujourd’hui sont synthétiques.</aside>
+    </section>
+
+    <section class="slide" id="slide-2" aria-label="Modèle et décision">
+      <p class="kicker">01 / Le modèle</p>
+      <h2>Une décision de vigilance, pas un verdict.</h2>
+      <div class="two-col">
+        <div>
+          <p class="lede">Le pipeline XGBoost du Projet6 estime la probabilité qu’un dossier gagné n’aille pas au bout. Il est chargé une seule fois au démarrage de l’API.</p>
+          <ul class="rule-list">
+            <li><span>Entrées</span><strong>44 clés requises · 17 valeurs null autorisées</strong></li>
+            <li><span>Réponse</span><strong>Score, seuil, indicateur de risque et version</strong></li>
+            <li><span>Validation temporelle</span><strong>994 entraînement · 248 holdout</strong></li>
+          </ul>
+        </div>
+        <div class="metric-stack">
+          <div class="ruled"><span class="small-label">ROC AUC · holdout</span><strong>0,7764</strong><p>Recalculée depuis les scores sauvegardés.</p></div>
+          <div class="ruled"><span class="small-label">Average precision · holdout</span><strong>0,7741</strong><p>Mesure de classement des dossiers à risque.</p></div>
+          <div class="ruled"><span class="small-label">Seuil métier</span><strong>0,06</strong><p>Faux négatif pondéré 5× plus qu’un faux positif dans ce run.</p></div>
+        </div>
+      </div>
+      <aside class="notes"><strong>À dire :</strong> Le seuil est un choix métier enregistré dans les métadonnées. Sur le holdout, il signale 246 dossiers sur 248 : c’est une vigilance très large. Le modèle et ses métadonnées sont identiques aux artefacts Projet6, et les 248 probabilités ont été reproduites à l’identique.</aside>
+    </section>
+
+    <section class="slide" id="slide-3" aria-label="Architecture">
+      <p class="kicker">02 / Architecture</p>
+      <h2>Une chaîne complète, lisible et vérifiable.</h2>
+      <div class="flow" role="list" aria-label="Flux de monitoring">
+        <article role="listitem"><span class="step">01 / SERVIR</span><strong>Render<br>FastAPI</strong><p>POST /predict et GET /health publics.</p></article>
+        <article role="listitem"><span class="step">02 / JOURNALISER</span><strong>Logs<br>ML_EVENT</strong><p>Entrées validées, score, statut et latence.</p></article>
+        <article role="listitem"><span class="step">03 / CONSERVER</span><strong>SQLite<br>local</strong><p>Import idempotent par identifiant d’événement.</p></article>
+        <article role="listitem"><span class="step">04 / COMPARER</span><strong>Evidently<br>AI</strong><p>Référence versus événements importés.</p></article>
+        <article role="listitem"><span class="step">05 / EXPLIQUER</span><strong>Streamlit<br>local</strong><p>Métriques, drift et preuve de stockage.</p></article>
+      </div>
+      <p class="footnote">GitHub Actions exécute les tests et le contrôle Docker avant le déploiement Render. Les données de monitoring restent en local : la base SQLite et les exports ne sont pas publiés.</p>
+      <aside class="notes"><strong>À dire :</strong> « Je sépare le service public de la chaîne d’analyse locale. Render exécute l’API ; j’exporte les événements structurés et les stocke dans SQLite. Evidently produit une comparaison que Streamlit rend consultable. »</aside>
+    </section>
+
+    <section class="slide" id="slide-4" aria-label="Démonstration API">
+      <p class="kicker">03 / Démo en direct</p>
+      <h2>Une requête, un score, une trace.</h2>
+      <div class="two-col">
+        <div>
+          <p class="lede">Ouvrir Swagger, choisir <code>POST /predict</code>, cliquer sur « Try it out », coller le JSON de test puis exécuter.</p>
+          <div class="actions">
+            <a class="action" href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">Swagger local corrigé ↗</a>
+            <a class="action secondary" href="https://projet8-scoring-api.onrender.com/health" target="_blank" rel="noopener noreferrer">Render /health ↗</a>
+          </div>
+          <button class="action secondary" id="copy-payload" type="button">Copier le JSON de démo</button>
+          <p class="footnote" role="status" id="copy-status">Données fictives, compatibles avec les 44 champs requis.</p>
+          <p class="notice">Utiliser l’API locale pour le contrat corrigé. L’appel crée un événement de test local ; le rapport Streamlit présenté ici utilise une simulation distincte.</p>
+        </div>
+        <div>
+          <div class="ruled"><span class="small-label">Contrat de réponse</span><div class="code-panel"><pre>risk_score    nombre entre 0 et 1
+threshold     0.06
+risk_flag     booléen
+model_name    xgboost_search
+model_version 2026-06-15</pre></div></div>
+          <details><summary>Afficher la requête complète</summary><div class="code-panel"><pre id="demo-json">{
+  "client_ape_division": 62.0,
+  "client_departement": "75",
+  "client_effectif": 25.0,
+  "client_idcc": 1486.0,
+  "client_nb_prior_dossiers": 3,
+  "client_opco_habituel": "opco-alpha",
+  "client_prior_nb_fails": 1,
+  "client_prior_nb_ok": 2,
+  "client_prior_nb_opcos_distincts": 1,
+  "client_prior_win_rate": 0.67,
+  "client_rang_dossier": 2,
+  "client_tranche_effectif": "11-49",
+  "annee_creation": 2018.0,
+  "ape_division": 62.0,
+  "departement_client": "75",
+  "duree_sous_seuil_min": false,
+  "ecart_heures_vs_seuil_min": 7.0,
+  "effectif_client": 25.0,
+  "est_nouvel_opco_pour_client": false,
+  "funder_max_factures": 4.0,
+  "funder_min_heures_facturable": 7.0,
+  "funder_nom": "funder-alpha",
+  "heures_prevues": 21.0,
+  "idcc": 1486.0,
+  "is_premier_dossier": false,
+  "is_rush_q4": false,
+  "is_session_ete": false,
+  "jours_depuis_dernier_dossier": 90.0,
+  "modalite": "Formation INTRA à distance synchrone",
+  "mois_creation": 6.0,
+  "montant_ca_eur": 300000.0,
+  "montant_demande_eur": 2100.0,
+  "opco_habituel_client": "opco-alpha",
+  "pct_financement_demande": 0.8,
+  "source_lead": "Repeat",
+  "taux_horaire_demande_eur": 100.0,
+  "thematique": "data",
+  "tranche_effectif": "11-49",
+  "trimestre_creation": 2.0,
+  "type_financement": "PDC",
+  "hg_departement_client": "75",
+  "hg_idcc": 1486.0,
+  "hg_opco_entreprise": "opco-alpha",
+  "hg_taille_entreprise": 25.0
+}</pre></div></details>
+        </div>
+      </div>
+      <aside class="notes"><strong>À dire :</strong> Montrer d’abord /health sur Render comme preuve du service public, puis /docs en local pour le contrat corrigé. Copier le JSON, exécuter /predict et commenter la réponse. Le score exact varie selon la requête ; ne pas annoncer un chiffre avant l’appel. Une erreur de champ manquant renvoie 422.</aside>
+    </section>
+
+    <section class="slide" id="slide-5" aria-label="Persistance SQLite">
+      <p class="kicker">04 / Preuve de stockage</p>
+      <h2>SQLite garde une trace relisible.</h2>
+      <div class="two-col">
+        <div>
+          <p class="lede">Les événements de test sont importés une fois, puis relus depuis une nouvelle connexion à la base. Le même export réimporté n’ajoute aucune ligne.</p>
+          <div class="sql-result"><div><strong>30</strong><span>événements persistés</span></div><div><strong>0</strong><span>doublon au second import</span></div></div>
+          <p class="footnote">Période simulée : 10 septembre 2026, 12:00–12:29 UTC. Dernier <code>event_id</code> : <code>production-29</code>.</p>
+        </div>
+        <div>
+          <p class="small-label">Contrôle SQL présenté au jury</p>
+          <div class="code-panel"><pre>SELECT COUNT(*),
+       MIN(timestamp),
+       MAX(timestamp)
+FROM prediction_events;</pre></div>
+          <div class="actions"><a class="action secondary" href="monitoring-demo-evidence.md" target="_blank" rel="noopener noreferrer">Lire la preuve détaillée ↗</a></div>
+          <p class="footnote">La clé primaire <code>event_id</code> rend l’import idempotent. Les fichiers SQLite, exports et rapports sont ignorés par Git.</p>
+        </div>
+      </div>
+      <aside class="notes"><strong>À dire :</strong> La preuve est le nombre de lignes lu après fermeture du processus d’import et réouverture de SQLite. Faire remarquer que 30 événements sont présents et qu’un deuxième import du même fichier en ajoute 0.</aside>
+    </section>
+
+    <section class="slide" id="slide-6" aria-label="Résultats Evidently">
+      <p class="kicker">05 / Evidently AI</p>
+      <h2>Deux variables se déplacent nettement.</h2>
+      <div class="two-col">
+        <div>
+          <div class="drift-number"><strong>2</strong><span>/ 6 en drift</span></div>
+          <p class="lede">30 références et 30 événements <strong>simulés</strong>, complets sur six variables.</p>
+          <div class="compare">
+            <div class="compare-row"><span class="name">heures_prevues</span><div><div class="bar"><i style="width:28%"></i></div><small>Référence : 15–35 h</small></div><div><div class="bar production"><i style="width:87%"></i></div><small>Simulation : 60–90 h</small></div></div>
+            <div class="compare-row"><span class="name">modalite</span><div><strong>standard / distance</strong><small>Référence</small></div><div><strong>standard / hybride</strong><small>Simulation, 50 % de catégorie nouvelle</small></div></div>
+          </div>
+        </div>
+        <div class="metric-stack">
+          <div class="ruled"><span class="small-label">Numérique · K-S</span><strong>p ≈ 1,69 × 10⁻¹⁷</strong><p><code>heures_prevues</code> franchit le seuil de 0,05.</p></div>
+          <div class="ruled"><span class="small-label">Catégoriel · Jensen–Shannon</span><strong>0,589</strong><p><code>modalite</code> franchit le seuil de 0,10.</p></div>
+          <div class="ruled"><span class="small-label">Lecture prudente</span><p>Deux alertes PSI supplémentaires ne sont pas confirmées par Evidently ici.</p></div>
+        </div>
+      </div>
+      <aside class="notes"><strong>À dire :</strong> Expliquer la différence entre un test statistique Evidently et les alertes locales PSI. Les valeurs ont été décalées volontairement pour prouver que l’alerte fonctionne. Il ne s’agit pas d’une observation de production Render.</aside>
+    </section>
+
+    <section class="slide" id="slide-7" aria-label="Dashboard Streamlit">
+      <p class="kicker">06 / Visualisation</p>
+      <h2>Le monitoring se lit dans Streamlit.</h2>
+      <div class="two-col">
+        <div>
+          <p class="lede">Un seul écran regroupe l’activité de l’API, les tests de drift et la preuve SQLite. Un avertissement signale si la base a changé depuis le dernier rapport.</p>
+          <ul class="rule-list">
+            <li><span>Opérationnel</span><strong>30 appels · 0 % d’erreur · p95 25 ms</strong></li>
+            <li><span>Comparaison</span><strong>2 / 6 variables détectées par Evidently</strong></li>
+            <li><span>Traçabilité</span><strong>30 lignes SQLite et rapport HTML exportable</strong></li>
+          </ul>
+          <div class="actions"><a class="action" href="http://127.0.0.1:8501" target="_blank" rel="noopener noreferrer">Ouvrir le dashboard local ↗</a><a class="action secondary" href="../output/playwright/monitoring-dashboard-demo.png" target="_blank" rel="noopener noreferrer">Capture de secours ↗</a></div>
+          <p class="footnote">Le lien local fonctionne lorsque Streamlit tourne sur cet ordinateur. La capture reste disponible sans serveur.</p>
+        </div>
+        <figure class="screenshot"><img src="../output/playwright/monitoring-dashboard-demo.png" alt="Capture du dashboard Streamlit montrant les métriques, le drift et la persistance SQLite"><figcaption>Capture réelle du dashboard de démonstration.</figcaption></figure>
+      </div>
+      <aside class="notes"><strong>À dire :</strong> Ouvrir Streamlit, montrer l’avertissement « référence synthétique », le tableau Evidently, puis descendre jusqu’à la preuve SQLite et au téléchargement du rapport HTML. Si le service local est arrêté, utiliser la capture de secours.</aside>
+    </section>
+
+    <section class="slide" id="slide-8" aria-label="Audit modèle et données">
+      <p class="kicker">07 / Relecture critique</p>
+      <h2>Le modèle est cohérent. Son contrat est corrigé.</h2>
+      <div class="two-col">
+        <div>
+          <div class="ruled"><span class="small-label">Contrôle modèle + API</span><p>Les artefacts sont identiques. Après correction des booléens, des valeurs null et des zéros, l’API accepte 248 / 248 dossiers du holdout et reproduit leurs scores.</p></div>
+          <div class="ruled" style="margin-top:25px"><span class="small-label">Qualité des données d’entraînement</span><p><code>source_lead</code> manque sur 879 des 994 lignes d’entraînement. Une référence fondée seulement sur les cas complets serait biaisée.</p></div>
+          <div class="ruled" style="margin-top:25px"><span class="small-label">Référence privée prête</span><p>Les 248 lignes du holdout sont complètes sur les six variables. Elles ont été exportées localement sans identifiants ni labels et exclues de Git.</p></div>
+        </div>
+        <div>
+          <div class="big-number">246<em> / 248</em></div>
+          <p class="lede">dossiers signalés au seuil <code>0,06</code> sur le holdout. Le coût métier baisse selon la pondération du Projet6, mais la charge d’alertes est élevée.</p>
+          <p class="notice">Changer le seuil ou réentraîner exige des labels ultérieurs et une validation temporelle indépendante. La référence privée n’a pas encore été comparée à un volume représentatif de production Render. <a href="model-data-audit.md" target="_blank" rel="noopener noreferrer">Audit complet ↗</a></p>
+        </div>
+      </div>
+      <aside class="notes"><strong>À dire :</strong> La relecture a trouvé un écart dans le contrat d’entrée, pas dans l’artefact : cinq booléens étaient envoyés comme texte et des valeurs null ou zéro étaient refusées. Après correction, les 248 lignes du holdout reproduisent exactement les scores du Projet6. Le seuil reste une vigilance large. Les 248 lignes récentes, complètes, servent de référence de monitoring.</aside>
+    </section>
+
+    <section class="slide" id="slide-9" aria-label="Qualité et limites">
+      <p class="kicker">08 / Qualité et limites</p>
+      <h2>Ce qui est prouvé. Ce qui reste à mesurer.</h2>
+      <table class="evidence-table">
+        <thead><tr><th>Élément</th><th>État vérifié</th><th>Portée</th></tr></thead>
+        <tbody>
+          <tr><td>API et déploiement</td><td>Render <code>/health</code> et <code>/docs</code> répondent HTTP 200 ; contrat corrigé testé en local</td><td>Publication du correctif Render à confirmer.</td></tr>
+          <tr><td>Tests et CI</td><td>42 tests locaux réussis ; dernier workflow GitHub publié réussi</td><td>Contrat API, monitoring, stockage et construction Docker contrôlés.</td></tr>
+          <tr><td>Monitoring</td><td>SQLite, Evidently et Streamlit exécutés de bout en bout</td><td>Scénario synthétique reproductible, pas une conclusion de production.</td></tr>
+          <tr><td>Modèle et contrat</td><td>Artefact identique au Projet6 ; 248 / 248 scores API reproduits</td><td>Pas de labels de production pour mesurer la qualité future.</td></tr>
+          <tr><td>À poursuivre</td><td>Logs Render représentatifs, performance, gouvernance et rétention</td><td>Conditions nécessaires pour une surveillance durable.</td></tr>
+        </tbody>
+      </table>
+      <div class="actions"><a class="action secondary" href="https://github.com/hgbe-GH/Projet8-scoring-api/actions/runs/35325835549" target="_blank" rel="noopener noreferrer">Workflow CI réussi ↗</a><a class="action secondary" href="../README.md" target="_blank" rel="noopener noreferrer">README technique ↗</a></div>
+      <aside class="notes"><strong>À dire :</strong> Ne pas confondre succès technique et qualité métier continue. Le pipeline de surveillance fonctionne. Pour conclure sur la dérive réelle ou réentraîner, il faut un échantillon de production, des labels futurs et des critères d’acceptation.</aside>
+    </section>
+
+    <section class="slide" id="slide-10" aria-label="Parcours de soutenance">
+      <p class="kicker">09 / Parcours de démo</p>
+      <h2>Trois preuves, une histoire claire.</h2>
+      <div class="three-col">
+        <div class="ruled"><span class="small-label">1 · Servir</span><h3>API locale / Swagger</h3><p>Montrer Render /health, puis envoyer le JSON sur l’API locale corrigée.</p><a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">Ouvrir Swagger ↗</a></div>
+        <div class="ruled"><span class="small-label">2 · Observer</span><h3>Streamlit / Evidently</h3><p>Lire les 2 variables décalées et l’avertissement « synthétique ».</p><a href="http://127.0.0.1:8501" target="_blank" rel="noopener noreferrer">Ouvrir Streamlit ↗</a></div>
+        <div class="ruled"><span class="small-label">3 · Prouver</span><h3>SQLite / GitHub</h3><p>Afficher les 30 lignes persistées, puis la CI et l’audit du modèle.</p><a href="monitoring-demo-evidence.md" target="_blank" rel="noopener noreferrer">Preuve SQLite ↗</a></div>
+      </div>
+      <p class="lede" style="margin-top:50px">Conclusion orale : « L’API est en ligne, la chaîne de monitoring est démontrée et ses limites sont explicites. La prochaine étape est d’évaluer la dérive et la qualité sur de vraies données de production gouvernées. »</p>
+      <p class="footnote">Navigation : ← → ou Espace · N pour les notes orales · Imprimer pour exporter en PDF.</p>
+      <aside class="notes"><strong>À dire :</strong> Terminer en montrant les preuves, pas seulement des promesses. En cas d’indisponibilité du dashboard local, ouvrir la capture. En cas de mise en veille Render, attendre son réveil puis recharger /health.</aside>
+    </section>
+  </main>
+
+  <footer class="bottombar" aria-label="Navigation de la présentation">
+    <span class="hint">← → pour avancer · N pour les notes · F11 pour le plein écran</span>
+    <div class="controls"><button type="button" id="previous" aria-label="Diapositive précédente">←</button><span class="slide-count" id="slide-count" aria-live="polite">01 / 10</span><button type="button" id="next" aria-label="Diapositive suivante">→</button></div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+  </footer>
+  <script>
+    (() => {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const previous = document.getElementById('previous');
+      const next = document.getElementById('next');
+      const count = document.getElementById('slide-count');
+      const progress = document.getElementById('progress');
+      let current = 0;
+
+      function show(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, position) => slide.classList.toggle('is-active', position === current));
+        count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+        progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        document.title = `${slides[current].getAttribute('aria-label')} · Projet 8`;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      function move(index) {
+        if (index < 0 || index >= slides.length) return;
+        location.hash = `slide-${index + 1}`;
+        show(index);
+      }
+      function fromHash() {
+        const match = /^#slide-(\d+)$/.exec(location.hash);
+        show(match ? Number(match[1]) - 1 : 0);
+      }
+      previous.addEventListener('click', () => move(current - 1));
+      next.addEventListener('click', () => move(current + 1));
+      window.addEventListener('hashchange', fromHash);
+      window.addEventListener('keydown', event => {
+        if (['INPUT', 'TEXTAREA', 'BUTTON', 'SUMMARY'].includes(document.activeElement?.tagName)) return;
+        if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { event.preventDefault(); move(current + 1); }
+        if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); move(current - 1); }
+        if (event.key === 'Home') { event.preventDefault(); move(0); }
+        if (event.key === 'End') { event.preventDefault(); move(slides.length - 1); }
+        if (event.key.toLowerCase() === 'n') document.body.classList.toggle('show-notes');
+      });
+      document.getElementById('copy-payload').addEventListener('click', async () => {
+        const payload = document.getElementById('demo-json').textContent.trim();
+        const status = document.getElementById('copy-status');
+        try {
+          await navigator.clipboard.writeText(payload);
+          status.textContent = 'JSON copié. Collez-le dans Swagger.';
+        } catch {
+          const helper = document.createElement('textarea');
+          helper.value = payload;
+          document.body.appendChild(helper);
+          helper.select();
+          const copied = document.execCommand('copy');
+          helper.remove();
+          status.textContent = copied ? 'JSON copié. Collez-le dans Swagger.' : 'Copie indisponible : ouvrez la requête complète et copiez le JSON.';
+        }
+      });
+      fromHash();
+    })();
+  </script>
+</body>
+</html>

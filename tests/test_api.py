@@ -30,6 +30,24 @@ def test_predict_returns_business_decision(valid_payload: dict[str, object]) -> 
     assert body["risk_flag"] is (body["risk_score"] >= body["threshold"])
 
 
+def test_predict_accepts_nulls_seen_during_training(valid_payload: dict[str, object]) -> None:
+    for name in (
+        "client_ape_division", "client_departement", "client_effectif",
+        "client_opco_habituel", "client_prior_win_rate", "ape_division",
+        "departement_client", "effectif_client", "jours_depuis_dernier_dossier",
+        "modalite", "opco_habituel_client", "pct_financement_demande",
+        "source_lead", "type_financement", "hg_departement_client",
+        "hg_opco_entreprise", "hg_taille_entreprise",
+    ):
+        valid_payload[name] = None
+
+    with TestClient(app) as client:
+        response = client.post("/predict", json=valid_payload)
+
+    assert response.status_code == 200
+    assert 0 <= response.json()["risk_score"] <= 1
+
+
 def test_predict_rejects_incomplete_payload(valid_payload: dict[str, object]) -> None:
     valid_payload.pop("funder_nom")
 

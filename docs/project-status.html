@@ -60,8 +60,9 @@
     </header>
 
     <section class="success">
-      <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API est déployée sur Render. Après les contrôles CI réussis, Render déploie automatiquement la branche <code>main</code>. Les logs structurés, le stockage SQLite, le rapport Evidently et le dashboard Streamlit sont disponibles localement. Il reste l’étude de performance et une référence Projet6 gouvernée pour conclure sur une dérive réelle.
+      <strong>Résumé très court :</strong> le dépôt GitHub public, l’API, les tests, Docker et le pipeline GitHub Actions sont en place. L’API est déployée sur Render. Après les contrôles CI réussis, Render déploie automatiquement la branche <code>main</code>. Les logs structurés, le stockage SQLite, le rapport Evidently et le dashboard Streamlit sont disponibles localement. Une référence privée Projet6 est préparée ; il manque encore un échantillon de production représentatif et une étude de performance pour conclure au-delà de la démonstration.
     </section>
+    <section class="warning"><strong>Publication en attente :</strong> la correction du contrat API et les 42 tests sont validés localement. La version publique Render doit encore recevoir le nouveau commit ; pour tester les booléens et les valeurs null, utiliser l’API locale.</section>
 
     <h2>1. Le contexte de la mission</h2>
     <p>Le document OpenClassrooms raconte une mise en situation professionnelle : vous êtes Data Scientist. Une responsable, Chloé Dubois, vous demande de mettre un modèle de scoring en production pour qu’il puisse répondre presque en temps réel.</p>
@@ -127,7 +128,7 @@
     </div>
 
     <h3>La validation et les erreurs</h3>
-    <p>Les 44 champs sont actuellement obligatoires. Si un champ manque, si du texte est envoyé à la place d’un nombre, ou si des heures prévues sont négatives, l’API répond avec une erreur claire <code>422</code>. Une erreur de chargement du modèle donne <code>503</code>. Une erreur interne de prédiction donne <code>500</code> sans divulguer le détail technique au client.</p>
+    <p>Les 44 clés sont obligatoires ; 17 valeurs peuvent être <code>null</code>, conformément aux données d’entraînement et à l’imputation du modèle. Cinq variables attendent un vrai booléen JSON. Un champ absent, un type invalide ou des heures prévues négatives reçoivent <code>422</code>. Une erreur de chargement du modèle donne <code>503</code>. Une erreur interne de prédiction donne <code>500</code> sans divulguer le détail technique au client. Le <a href="model-data-audit.md">contrat corrigé a été vérifié sur les 248 dossiers du holdout</a>.</p>
 
     <h3>Les logs et le monitoring</h3>
     <p>Chaque appel <code>/predict</code> produit un événement JSON avec timestamp, latence, statut, version du modèle et, en cas de succès, score, décision et entrées validées. Les erreurs ne contiennent ni entrées brutes ni détails techniques. L’événement est écrit localement et dans les logs Render avec le préfixe <code>ML_EVENT</code>.</p>
@@ -135,7 +136,7 @@
 
     <h3>Les tests</h3>
     <p>La suite automatisée couvre le modèle, les 44 champs, les erreurs de saisie, la prédiction, le chargement unique, les logs, les routes HTTP, la CI/CD, le stockage SQLite et l’analyse de dérive.</p>
-    <p>La dernière vérification Docker a donné : <strong>26 tests réussis, 0 échec</strong>.</p>
+    <p>La vérification locale actuelle donne <strong>42 tests réussis, 0 échec</strong>. Le workflow GitHub teste aussi la construction et le démarrage Docker.</p>
 
     <h3>Docker</h3>
     <p>Le fichier <code>Dockerfile</code> permet de construire une image complète. Elle utilise Python 3.12, car c’est la version enregistrée avec le modèle dans MLflow. Le modèle est ainsi relancé dans un environnement compatible.</p>
@@ -156,7 +157,7 @@
     <h3>Priorité 1 — conserver la preuve du déploiement</h3>
     <p>L’API est disponible sur <a href="https://projet8-scoring-api.onrender.com/health">projet8-scoring-api.onrender.com/health</a>. Render reconstruit l’image Docker et vérifie <code>/health</code> après un push dont la CI GitHub est réussie. Une capture des pages GitHub Actions et Render permettra de le démontrer à la soutenance.</p>
 
-    <h3>Priorité 2 — remplacer la référence synthétique</h3>
+    <h3>Priorité 2 — comparer la référence Projet6 à la production</h3>
     <p>Le monitoring local est en place. Il lit les événements SQLite et permet de suivre :</p>
     <ul>
       <li>la distribution de six variables d’entrée avec Evidently ;</li>
@@ -164,7 +165,7 @@
       <li>la latence et le taux d’erreur des appels ;</li>
       <li>le nombre et la période des événements conservés dans SQLite.</li>
     </ul>
-    <p>Le dashboard Streamlit affiche ces résultats et avertit si SQLite a changé depuis le dernier rapport. La démonstration utilise une référence synthétique et prouve le mécanisme, pas une dérive réelle. Pour une conclusion de production, il faudra une référence stable provenant du Projet6, gouvernée et non publiée.</p>
+    <p>Le dashboard Streamlit affiche ces résultats et avertit si SQLite a changé depuis le dernier rapport. La démonstration utilise une référence synthétique et prouve le mécanisme, pas une dérive réelle. Une référence privée de 248 lignes du holdout Projet6 est désormais préparée localement, sans identifiants ni labels. Il reste à importer suffisamment d’événements Render réels pour la comparer à la production.</p>
 
     <h3>Priorité 3 — faire évoluer le stockage si le service grandit</h3>
     <p>Le PoC conserve durablement les exports dans SQLite localement. En production réelle, il faudra remplacer ou compléter cette solution par un stockage centralisé, chiffré et soumis à des règles de rétention.</p>
@@ -179,7 +180,7 @@
     <ol class="steps">
       <li><strong>Conserver les liens et captures</strong> du workflow GitHub Actions et du déploiement Render.</li>
       <li><strong>Conserver les exports</strong> Render et les rapports de monitoring lors de la démonstration.</li>
-      <li><strong>Fournir une référence Projet6 gouvernée</strong> pour remplacer la référence synthétique.</li>
+      <li><strong>Importer des événements Render représentatifs</strong> et les comparer à la référence Projet6 préparée localement.</li>
       <li><strong>Mesurer puis optimiser</strong> les performances de l’API.</li>
     </ol>
 
@@ -190,7 +191,7 @@
         <tr><td><code>README.md</code></td><td>Le mode d’emploi du projet : lancer localement, tester, utiliser Docker et configurer le déploiement.</td></tr>
         <tr><td><code>models/</code></td><td>Le modèle entraîné et son dictionnaire de métadonnées.</td></tr>
         <tr><td><code>src/scoring_api/main.py</code></td><td>Les routes de l’API.</td></tr>
-        <tr><td><code>src/scoring_api/schemas.py</code></td><td>Les 44 champs obligatoires et les règles de validation.</td></tr>
+        <tr><td><code>src/scoring_api/schemas.py</code></td><td>Les 44 clés requises, les valeurs null autorisées, les booléens et les règles de validation.</td></tr>
         <tr><td><code>src/scoring_api/model_service.py</code></td><td>Le chargement unique et la prédiction avec le modèle.</td></tr>
         <tr><td><code>src/scoring_api/logging_service.py</code></td><td>L’écriture des événements de production.</td></tr>
         <tr><td><code>src/scoring_api/evidently_monitoring.py</code></td><td>La comparaison Evidently entre référence et production.</td></tr>
@@ -204,11 +205,11 @@
 
     <h2>7. Ce que vous pouvez dire simplement à l’oral</h2>
     <div class="note">
-      « J’ai repris le modèle construit dans le Projet6 et je l’ai exposé avec une API FastAPI. L’API valide les données avant de prédire, charge le modèle une seule fois au démarrage et renvoie un score de risque ainsi qu’une décision basée sur le seuil métier. Le projet est conteneurisé avec Docker et testé automatiquement par GitHub Actions à chaque push. Après les contrôles réussis, Render déploie automatiquement l’API. Les appels sont journalisés, exportés localement puis stockés dans SQLite. Evidently compare les variables d’entrée à une référence et Streamlit affiche les résultats, la latence, les erreurs et la preuve de stockage. La référence synthétique démontre le pipeline ; une référence Projet6 gouvernée reste nécessaire pour conclure sur la production. »
+      « J’ai repris le modèle construit dans le Projet6 et je l’ai exposé avec une API FastAPI. L’API valide les données avant de prédire, charge le modèle une seule fois au démarrage et renvoie un score de risque ainsi qu’une décision basée sur le seuil métier. Le projet est conteneurisé avec Docker et testé automatiquement par GitHub Actions à chaque push. Après les contrôles réussis, Render déploie automatiquement l’API. Les appels sont journalisés, exportés localement puis stockés dans SQLite. Evidently compare les variables d’entrée à une référence et Streamlit affiche les résultats, la latence, les erreurs et la preuve de stockage. Une référence privée Projet6 est prête ; la comparaison réelle attend encore des événements Render représentatifs. »
     </div>
 
     <footer>
-      Rapport mis à jour le 17 septembre 2026. Le pipeline local a été vérifié par tests, par un lancement Streamlit et par le test de fumée Docker. La mesure de drift reste démonstrative tant que la référence Projet6 et un échantillon de production représentatif ne sont pas disponibles. L’étude de performance reste à réaliser.
+      Rapport mis à jour le 18 septembre 2026. La suite locale compte 42 tests réussis. Le pipeline de démonstration a été exécuté avec Streamlit ; la référence Projet6 privée est prête, mais la mesure de drift reste démonstrative tant qu’un échantillon Render représentatif n’est pas disponible. L’étude de performance reste à réaliser. Voir aussi la <a href="presentation-soutenance.html">présentation HTML</a>.
     </footer>
   </main>
 </body>

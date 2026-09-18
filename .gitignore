@@ -13,6 +13,7 @@ data/raw/
 data/interim/
 data/processed/
 data/monitoring/
+output/private_monitoring/
 reports/monitoring/
 mlruns/
 .DS_Store

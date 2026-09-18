@@ -3,6 +3,11 @@
 API FastAPI de mise en production du modèle de scoring du Projet6. Elle estime le
 risque qu'un dossier gagné ne soit pas mené à son terme.
 
+Pour la soutenance, ouvrir la [présentation HTML et son parcours de
+démonstration](docs/presentation-soutenance.html). Elle renvoie vers l'API
+publique, Streamlit local, la preuve SQLite et [l'audit du modèle et des
+données](docs/model-data-audit.md).
+
 ## Prérequis
 
 - Python 3.12
@@ -26,8 +31,14 @@ Swagger sur `http://127.0.0.1:8000/docs`.
   `models/matchers_option_a_metadata.json` et renvoie `risk_score`,
   `threshold`, `risk_flag`, `model_name` et `model_version`.
 
-Les champs requis, types incorrects et valeurs invalides reçoivent une réponse
-`422`. Le modèle est chargé une fois au démarrage, puis réutilisé.
+Les 44 clés sont requises ; 17 valeurs peuvent être `null`, comme dans la base
+du Projet6 et dans le pipeline d'imputation du modèle. Cinq variables de type
+oui/non attendent des booléens JSON (`true` ou `false`), et les zéros de
+`client_rang_dossier` et `montant_demande_eur` sont acceptés car ils figurent
+dans le holdout. Un champ absent, un type incorrect ou une valeur invalide
+reçoit `422`. Le modèle est chargé une fois au démarrage, puis réutilisé.
+L'[audit du contrat et des données](docs/model-data-audit.md) vérifie que les
+248 dossiers du holdout passent l'API avec les mêmes scores que dans le Projet6.
 
 ## Tests
 
@@ -124,6 +135,29 @@ exige une référence stable et gouvernée issue du Projet6, puis un volume de
 production représentatif. Voir [la preuve de persistance et les résultats de la
 démo](docs/monitoring-demo-evidence.md).
 
+### Référence locale provenant du Projet6
+
+Si le dépôt Projet6 est disponible dans le dossier voisin, construire une
+référence avec ses 248 dossiers de validation temporelle. Le script reproduit
+les filtres et le découpage enregistrés dans les métadonnées, puis exporte
+uniquement les six variables suivies, sans identifiants ni labels. Le fichier
+privé est ignoré par Git :
+
+```bash
+PYTHONPATH=src .venv/bin/python scripts/build_project6_reference.py \
+  --modeling-base ../Projet6/data/processed/dossiers_gain_modeling_base.parquet \
+  --output output/private_monitoring/project6_holdout_reference.jsonl
+```
+
+Cette référence est distincte du scénario synthétique ci-dessus. Après import
+d'un export **réel** de logs Render dans SQLite, lancer l'analyse avec
+`--reference output/private_monitoring/project6_holdout_reference.jsonl` et
+indiquer un `--output-dir` distinct pour ne pas écraser le rapport de démo.
+Il faut au moins dix prédictions complètes et représentatives dans chaque jeu.
+Voir [l'audit du modèle et des données](docs/model-data-audit.md) : le modèle
+est reproductible, mais le seuil métier produit beaucoup d'alertes sur le
+holdout et la référence d'entraînement serait biaisée par les valeurs manquantes.
+
 Pour contrôler manuellement la persistance après fermeture du script d'import :
 
 ```bash
@@ -134,8 +168,8 @@ with sqlite3.connect('data/monitoring/monitoring.db') as db:
 PY
 ```
 
-La référence réelle doit avoir le même format JSONL d'événements réussis que
-`reference_events.jsonl`, avec `reference_source` indiquant son origine. Les
+La référence réelle est un JSONL dont chaque ligne contient `status: success`,
+les six `features` suivies et `reference_source` indiquant son origine. Les
 événements de production proviennent uniquement de SQLite après import Render.
 Le dashboard est local, sur `http://localhost:8501`; il lit le dernier rapport
 généré et la base SQLite. Relancer l'analyse après un nouvel import pour mettre
